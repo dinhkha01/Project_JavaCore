@@ -1,6 +1,6 @@
 package presentation;
 
-import business.service.admin.AdminManager;
+import business.service.admin.AdminManagerAuthen;
 import presentation.admin.MenuAdmin;
 import presentation.candidate.MenuCandidate;
 import java.util.Scanner;
@@ -8,7 +8,7 @@ import java.util.Scanner;
 public class MenuSystem {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        AdminManager adminManager = new AdminManager();
+        AdminManagerAuthen adminManager = new AdminManagerAuthen();
 
         // Kiểm tra phiên đăng nhập trước khi hiển thị menu chính
         if (adminManager.hasActiveSession()) {

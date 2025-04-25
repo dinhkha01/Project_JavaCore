@@ -6,12 +6,12 @@ import validate.ValidateAdmin;
 import java.io.*;
 import java.util.Scanner;
 
-public class AdminManager {
+public class AdminManagerAuthen {
     private static final String SESSION_FILE = "admin_session.txt";
     private Admin currentAdmin;
 
-    public AdminManager() {
-        loadSession(); // Tự động tải phiên đăng nhập khi khởi tạo
+    public AdminManagerAuthen() {
+        loadSession();
     }
 
     // Kiểm tra xem đã có phiên đăng nhập không
@@ -26,17 +26,13 @@ public class AdminManager {
 
     // Đăng nhập admin
     public boolean loginAdmin() {
-        // Nếu đã có phiên đăng nhập, trả về true luôn
         if (hasActiveSession()) {
             System.out.println("Bạn đã đăng nhập với tài khoản: " + currentAdmin.getUsername());
             return true;
         }
-
         Scanner sc = new Scanner(System.in);
         System.out.println("\n=== ĐĂNG NHẬP ADMIN ===");
-
         boolean isValid = ValidateAdmin.validateLogin(sc);
-
         if (isValid) {
             // Tạo đối tượng admin mặc định
             currentAdmin = Admin.getDefaultAdmin();
@@ -60,9 +56,6 @@ public class AdminManager {
     private void saveSession() {
         try (FileWriter fw = new FileWriter(SESSION_FILE);
              BufferedWriter bw = new BufferedWriter(fw)) {
-            // Lưu thông tin cần thiết của admin
-            bw.write(String.valueOf(currentAdmin.getId()));
-            bw.newLine();
             bw.write(currentAdmin.getUsername());
             bw.newLine();
             bw.write(currentAdmin.getPassword());
@@ -80,14 +73,10 @@ public class AdminManager {
 
         try (FileReader fr = new FileReader(SESSION_FILE);
              BufferedReader br = new BufferedReader(fr)) {
-            String idStr = br.readLine();
             String username = br.readLine();
             String password = br.readLine();
-
             // Kiểm tra xem phiên đăng nhập có hợp lệ không
-            if (idStr != null && username != null && password != null) {
-                int id = Integer.parseInt(idStr);
-
+            if (username != null && password != null) {
                 // Kiểm tra xem phiên đăng nhập có khớp với admin mặc định không
                 Admin defaultAdmin = Admin.getDefaultAdmin();
                 if (defaultAdmin.getUsername().equals(username) &&
@@ -98,7 +87,6 @@ public class AdminManager {
             }
         } catch (IOException | NumberFormatException e) {
             System.err.println("Lỗi khi đọc phiên đăng nhập: " + e.getMessage());
-            // Xóa file session nếu bị lỗi
             clearSession();
         }
     }

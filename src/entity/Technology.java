@@ -4,15 +4,17 @@ public class Technology {
     private int id;
     private String name;
 
-    // Constructors
-    public Technology() {}
+    // Constructor mặc định
+    public Technology() {
+    }
 
+    // Constructor đầy đủ
     public Technology(int id, String name) {
         this.id = id;
         this.name = name;
     }
 
-    // Getters and Setters
+    // Getter và Setter
     public int getId() {
         return id;
     }

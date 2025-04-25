@@ -1,0 +1,117 @@
+-- Set temporary delimiter
+DELIMITER //
+
+-- Drop existing procedures if they exist
+DROP PROCEDURE IF EXISTS sp_GetAllTechnologies //
+DROP PROCEDURE IF EXISTS sp_AddTechnology //
+DROP PROCEDURE IF EXISTS sp_DeleteTechnology //
+DROP PROCEDURE IF EXISTS sp_UpdateTechnology //
+DROP PROCEDURE IF EXISTS sp_GetTechnologyById //
+
+-- 1. Get list of recruitment technologies
+CREATE PROCEDURE sp_GetAllTechnologies()
+BEGIN
+    SELECT * FROM technology
+    WHERE name NOT LIKE '%_deleted'
+    ORDER BY id;
+END //
+
+-- 2. Add new technology (with validation to prevent duplicate names)
+CREATE PROCEDURE sp_AddTechnology(IN tech_name VARCHAR(100), OUT result INT)
+BEGIN
+    DECLARE existing_count INT DEFAULT 0;
+
+    -- Check if technology name already exists
+    SELECT COUNT(*) INTO existing_count FROM technology
+    WHERE name = tech_name OR name = CONCAT(tech_name, '_deleted');
+
+    IF existing_count > 0 THEN
+        -- Already exists
+        SET result = 0; -- Return 0 if failed due to duplicate name
+    ELSE
+        -- Doesn't exist, add new
+        INSERT INTO technology (name) VALUES (tech_name);
+        SET result = LAST_INSERT_ID(); -- Return ID of new record
+    END IF;
+END //
+
+-- 3. Delete technology
+CREATE PROCEDURE sp_DeleteTechnology(IN tech_id INT, OUT result INT)
+BEGIN
+    DECLARE tech_name VARCHAR(100);
+    DECLARE has_dependencies BOOLEAN DEFAULT FALSE;
+    DECLARE existing_deleted_count INT DEFAULT 0;
+
+    -- Get technology name
+    SELECT name INTO tech_name FROM technology WHERE id = tech_id;
+
+    -- Check if technology has any dependencies
+    SELECT EXISTS(
+        SELECT 1 FROM candidate_technology WHERE technologyId = tech_id
+        UNION
+        SELECT 1 FROM recruitment_position_technology WHERE technologyId = tech_id
+    ) INTO has_dependencies;
+
+    -- Check if deleted name already exists
+    SELECT COUNT(*) INTO existing_deleted_count FROM technology
+    WHERE name = CONCAT(tech_name, '_deleted') AND id != tech_id;
+
+    IF has_dependencies = TRUE THEN
+        -- Has dependencies, rename to *_deleted
+        IF existing_deleted_count > 0 THEN
+            -- If name_deleted already exists, add timestamp
+            UPDATE technology SET name = CONCAT(tech_name, '_deleted_', UNIX_TIMESTAMP()) WHERE id = tech_id;
+        ELSE
+            -- Rename to name_deleted
+            UPDATE technology SET name = CONCAT(tech_name, '_deleted') WHERE id = tech_id;
+        END IF;
+        SET result = 1; -- Success (soft delete)
+    ELSE
+        -- No dependencies, delete completely
+        DELETE FROM technology WHERE id = tech_id;
+        IF ROW_COUNT() > 0 THEN
+            SET result = 2; -- Success (hard delete)
+        ELSE
+            SET result = 0; -- Failed
+        END IF;
+    END IF;
+END //
+
+-- 4. Update technology
+CREATE PROCEDURE sp_UpdateTechnology(IN tech_id INT, IN new_name VARCHAR(100), OUT result INT)
+BEGIN
+    DECLARE existing_count INT DEFAULT 0;
+    DECLARE current_name VARCHAR(100);
+
+    -- Get current name
+    SELECT name INTO current_name FROM technology WHERE id = tech_id;
+
+    -- If name is not changed
+    IF current_name = new_name THEN
+        SET result = 1; -- Success but nothing changed
+    ELSE
+        -- Check if new name already exists
+        SELECT COUNT(*) INTO existing_count FROM technology
+        WHERE (name = new_name OR name = CONCAT(new_name, '_deleted')) AND id != tech_id;
+
+        IF existing_count > 0 THEN
+            SET result = 0; -- Failed due to duplicate name
+        ELSE
+            UPDATE technology SET name = new_name WHERE id = tech_id;
+            IF ROW_COUNT() > 0 THEN
+                SET result = 2; -- Success updated
+            ELSE
+                SET result = 0; -- Failed
+            END IF;
+        END IF;
+    END IF;
+END //
+
+-- 5. Find technology by ID
+CREATE PROCEDURE sp_GetTechnologyById(IN tech_id INT)
+BEGIN
+    SELECT * FROM technology WHERE id = tech_id;
+END //
+
+-- Restore default delimiter
+DELIMITER ;

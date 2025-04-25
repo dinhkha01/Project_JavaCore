@@ -1,12 +1,12 @@
 package presentation.admin;
 
-import business.service.admin.AdminManager;
+import business.service.admin.AdminManagerAuthen;
 
 import java.util.Scanner;
 
 public class MenuAdmin {
     private Scanner scanner = new Scanner(System.in);
-    private AdminManager adminManager = new AdminManager();
+    private AdminManagerAuthen adminManager = new AdminManagerAuthen();
 
     public void showMainMenu() {
         while (true) {

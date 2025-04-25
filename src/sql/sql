@@ -1,0 +1,124 @@
+-- Tạo database
+CREATE DATABASE IF NOT EXISTS projectJavaCore;
+USE projectJavaCore;
+
+-- Tạo bảng candidate
+CREATE TABLE candidate (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    experience INT DEFAULT 0,
+    gender VARCHAR(10),
+    status VARCHAR(20) DEFAULT 'active',
+    description TEXT,
+    dob DATE
+);
+
+-- Tạo bảng technology
+CREATE TABLE technology (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Tạo bảng recruitment_position (đã sửa lỗi CHECK)
+CREATE TABLE recruitment_position (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    minSalary DECIMAL(12,2),
+    maxSalary DECIMAL(12,2),
+    minExperience INT DEFAULT 0,
+    createdDate DATE DEFAULT (CURDATE()),
+    expiredDate DATE NOT NULL
+);
+
+-- Tạo bảng candidate_technology
+CREATE TABLE candidate_technology (
+    candidateId INT NOT NULL,
+    technologyId INT NOT NULL,
+    PRIMARY KEY (candidateId, technologyId),
+    FOREIGN KEY (candidateId) REFERENCES candidate(id),
+    FOREIGN KEY (technologyId) REFERENCES technology(id)
+);
+
+-- Tạo bảng recruitment_position_technology
+CREATE TABLE recruitment_position_technology (
+    recruitmentPositionId INT NOT NULL,
+    technologyId INT NOT NULL,
+    PRIMARY KEY (recruitmentPositionId, technologyId),
+    FOREIGN KEY (recruitmentPositionId) REFERENCES recruitment_position(id),
+    FOREIGN KEY (technologyId) REFERENCES technology(id)
+);
+
+-- Tạo bảng application
+CREATE TABLE application (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    candidateId INT NOT NULL,
+    recruitmentPositionId INT NOT NULL,
+    cvUrl VARCHAR(255) NOT NULL,
+    progress ENUM('pending', 'handling', 'interviewing', 'done') NOT NULL DEFAULT 'pending',
+    interviewRequestDate DATETIME,
+    interviewRequestResult VARCHAR(100),
+    interviewLink VARCHAR(255),
+    interviewTime DATETIME,
+    interviewResult VARCHAR(50),
+    interviewResultNote TEXT,
+    destroyAt DATETIME,
+    createAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updateAt DATETIME ON UPDATE CURRENT_TIMESTAMP,
+    destroyReason TEXT,
+    FOREIGN KEY (candidateId) REFERENCES candidate(id),
+    FOREIGN KEY (recruitmentPositionId) REFERENCES recruitment_position(id)
+);
+
+-- Thêm dữ liệu mẫu vào bảng candidate
+INSERT INTO candidate (name, email, password, phone, experience, gender, description, dob)
+VALUES
+('Nguyễn Văn A', 'nguyenvana@gmail.com', '12345678', '0987654321', 3, 'Nam', 'Chuyên gia lập trình Java với 3 năm kinh nghiệm', '1995-05-15'),
+('Trần Thị B', 'tranthib@gmail.com', '12345678', '0912345678', 5, 'Nữ', 'Senior developer với kinh nghiệm phát triển web', '1990-08-22'),
+('Lê Văn C', 'levanc@gmail.com', '12345678', '0977123456', 0, 'Nam', 'Sinh viên mới tốt nghiệp ngành CNTT', '2000-01-10');
+
+-- Thêm dữ liệu mẫu vào bảng technology
+INSERT INTO technology (name)
+VALUES
+('Java'),
+('Spring Boot'),
+('ReactJS'),
+('MySQL'),
+('Angular'),
+('NodeJS');
+
+-- Thêm dữ liệu mẫu vào bảng recruitment_position
+INSERT INTO recruitment_position (name, description, minSalary, maxSalary, minExperience, expiredDate)
+VALUES
+('Java Developer', 'Phát triển ứng dụng backend sử dụng Java và Spring Boot', 15000000, 25000000, 2, '2025-06-30'),
+('Frontend Developer', 'Phát triển giao diện người dùng bằng ReactJS', 12000000, 20000000, 1, '2025-06-15'),
+('Fullstack Developer', 'Phát triển cả frontend và backend cho ứng dụng web', 18000000, 30000000, 3, '2025-07-15');
+
+-- Thêm dữ liệu mẫu vào bảng candidate_technology
+INSERT INTO candidate_technology (candidateId, technologyId)
+VALUES
+(1, 1), -- Nguyễn Văn A biết Java
+(1, 2), -- Nguyễn Văn A biết Spring Boot
+(2, 3), -- Trần Thị B biết ReactJS
+(2, 5), -- Trần Thị B biết Angular
+(3, 1), -- Lê Văn C biết Java
+(3, 4); -- Lê Văn C biết MySQL
+
+-- Thêm dữ liệu mẫu vào bảng recruitment_position_technology
+INSERT INTO recruitment_position_technology (recruitmentPositionId, technologyId)
+VALUES
+(1, 1), -- Vị trí Java Developer yêu cầu Java
+(1, 2), -- Vị trí Java Developer yêu cầu Spring Boot
+(2, 3), -- Vị trí Frontend Developer yêu cầu ReactJS
+(3, 1), -- Vị trí Fullstack Developer yêu cầu Java
+(3, 3); -- Vị trí Fullstack Developer yêu cầu ReactJS
+
+-- Thêm dữ liệu mẫu vào bảng application
+INSERT INTO application (candidateId, recruitmentPositionId, cvUrl, progress, interviewRequestDate, interviewLink, interviewTime)
+VALUES
+(1, 1, 'https://storage.com/cv/nguyenvana-java.pdf', 'interviewing', '2025-04-20 09:00:00', 'https://meet.google.com/abc-defg-hij', '2025-04-27 14:00:00'),
+(2, 2, 'https://storage.com/cv/tranthib-react.pdf', 'handling', '2025-04-18 10:30:00', NULL, NULL),
+(3, 1, 'https://storage.com/cv/levanc-java.pdf', 'pending', NULL, NULL, NULL);
