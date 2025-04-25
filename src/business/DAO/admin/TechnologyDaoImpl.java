@@ -78,7 +78,6 @@ public class TechnologyDaoImpl implements IAdminTechnology {
             result = statement.getInt(2);
 
             if (result > 0) {
-                // Cập nhật ID cho đối tượng nếu thêm thành công
                 technology.setId(result);
             }
         } catch (SQLException e) {

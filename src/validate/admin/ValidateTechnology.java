@@ -20,33 +20,27 @@ public class ValidateTechnology {
     /**
      * Kiểm tra tên công nghệ có duy nhất không
      * @param name Tên công nghệ cần kiểm tra
-     * @return true nếu tên duy nhất, false nếu đã tồn tại
+     * @return true nếu tên duy nhất, false nếu đã tồn tại (chỉ kiểm tra công nghệ chưa xóa)
      */
     public boolean isNameUnique(String name) {
         if (name == null || name.trim().isEmpty()) {
             return false;
         }
-
         List<Technology> technologies = technologyDao.findAll();
 
-        // Kiểm tra xem tên công nghệ đã tồn tại chưa (không phân biệt chữ hoa/thường)
         for (Technology tech : technologies) {
-            if (tech.getName().equalsIgnoreCase(name)) {
-                return false;
+            System.out.println("So sánh với: " + tech.getName());
+            // Bỏ qua các công nghệ đã bị xóa mềm
+            if (tech.getName().endsWith("_deleted")) {
+                continue;
             }
-
-            // Kiểm tra xem có phải là phiên bản đã bị xóa mềm không
-            String nameWithoutDeleted = name.endsWith("*deleted") ?
-                    name.substring(0, name.length() - 8) : name;
-
-            String techNameWithoutDeleted = tech.getName().endsWith("*deleted") ?
-                    tech.getName().substring(0, tech.getName().length() - 8) : tech.getName();
-
-            if (nameWithoutDeleted.equalsIgnoreCase(techNameWithoutDeleted)) {
+            // So sánh tên không phân biệt chữ hoa/thường
+            if (tech.getName().equalsIgnoreCase(name)) {
                 return false;
             }
         }
 
+        System.out.println("-> Tên hợp lệ");
         return true;
     }
 
@@ -68,23 +62,18 @@ public class ValidateTechnology {
             if (tech.getId() == id) {
                 continue;
             }
-
-            if (tech.getName().equalsIgnoreCase(name)) {
-                return false;
+            // Bỏ qua các công nghệ đã bị xóa mềm
+            if (tech.getName().endsWith("_deleted")) {
+                continue;
             }
 
-            // Kiểm tra xem có phải là phiên bản đã bị xóa mềm không
-            String nameWithoutDeleted = name.endsWith("*deleted") ?
-                    name.substring(0, name.length() - 8) : name;
-
-            String techNameWithoutDeleted = tech.getName().endsWith("*deleted") ?
-                    tech.getName().substring(0, tech.getName().length() - 8) : tech.getName();
-
-            if (nameWithoutDeleted.equalsIgnoreCase(techNameWithoutDeleted)) {
+            // So sánh tên không phân biệt chữ hoa/thường
+            if (tech.getName().equalsIgnoreCase(name)) {
                 return false;
             }
         }
 
+        System.out.println("-> Tên hợp lệ");
         return true;
     }
 }

@@ -25,7 +25,7 @@ public class TechnologyService {
         List<Technology> allTechnologies = technologyDao.findAll();
         // Lọc ra các công nghệ không kết thúc bằng *deleted
         return allTechnologies.stream()
-                .filter(tech -> !tech.getName().endsWith("*deleted"))
+                .filter(tech -> !tech.getName().endsWith("_deleted"))
                 .collect(Collectors.toList());
     }
 
@@ -35,7 +35,7 @@ public class TechnologyService {
      * @return true nếu thêm thành công, false nếu thất bại
      */
     public boolean addTechnology(String name) {
-        // Kiểm tra tên không trùng
+        // Kiểm tra tên không trùng với công nghệ đang hoạt động
         if (!validateTechnology.isNameUnique(name)) {
             return false;
         }
@@ -44,7 +44,7 @@ public class TechnologyService {
         technology.setName(name);
 
         int result = technologyDao.add(technology);
-        return result > 0;
+        return result >0;
     }
 
     /**
@@ -65,8 +65,8 @@ public class TechnologyService {
             return true;
         }
 
-        // Kiểm tra tên không trùng
-        if (!validateTechnology.isNameUnique(newName)) {
+        // Kiểm tra tên không trùng, bỏ qua ID hiện tại
+        if (!validateTechnology.isNameUnique(newName, id)) {
             return false;
         }
 
@@ -105,12 +105,12 @@ public class TechnologyService {
     private boolean softDeleteTechnology(Technology technology) {
         String oldName = technology.getName();
         // Kiểm tra nếu đã bị xóa mềm trước đó
-        if (oldName.endsWith("*deleted")) {
+        if (oldName.endsWith("_deleted")) {
             return true;
         }
 
-        // Đổi tên thành [tên cũ*deleted]
-        String newName = oldName + "*deleted";
+        // Đổi tên thành [tên cũ + *deleted]
+        String newName = oldName + "_deleted";
         technology.setName(newName);
 
         int result = technologyDao.update(technology);

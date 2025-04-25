@@ -19,21 +19,23 @@ END //
 -- 2. Add new technology (with validation to prevent duplicate names)
 CREATE PROCEDURE sp_AddTechnology(IN tech_name VARCHAR(100), OUT result INT)
 BEGIN
-    DECLARE existing_count INT DEFAULT 0;
+     DECLARE existing_count INT DEFAULT 0;
 
-    -- Check if technology name already exists
-    SELECT COUNT(*) INTO existing_count FROM technology
-    WHERE name = tech_name OR name = CONCAT(tech_name, '_deleted');
+     -- Chỉ kiểm tra trùng tên với các công nghệ CHƯA bị xóa mềm
+     SELECT COUNT(*) INTO existing_count
+     FROM technology
+     WHERE name = tech_name
+       AND NOT name LIKE '%_deleted';  -- Loại trừ các bản ghi đã xóa
 
-    IF existing_count > 0 THEN
-        -- Already exists
-        SET result = 0; -- Return 0 if failed due to duplicate name
-    ELSE
-        -- Doesn't exist, add new
-        INSERT INTO technology (name) VALUES (tech_name);
-        SET result = LAST_INSERT_ID(); -- Return ID of new record
-    END IF;
-END //
+     IF existing_count > 0 THEN
+         -- Tên đã tồn tại (trong bản ghi chưa xóa)
+         SET result = 0;
+     ELSE
+         -- Thêm mới nếu không trùng
+         INSERT INTO technology (name) VALUES (tech_name);
+         SET result = LAST_INSERT_ID();
+     END IF;
+ END
 
 -- 3. Delete technology
 CREATE PROCEDURE sp_DeleteTechnology(IN tech_id INT, OUT result INT)
