@@ -1,6 +1,6 @@
 package validate.admin;
 
-import business.DAO.admin.TechnologyDaoImpl;
+import business.DAO.admin.technology.TechnologyDaoImpl;
 import entity.Technology;
 
 import java.sql.SQLException;

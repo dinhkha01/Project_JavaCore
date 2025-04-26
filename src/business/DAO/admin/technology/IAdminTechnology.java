@@ -1,4 +1,4 @@
-package business.DAO.admin;
+package business.DAO.admin.technology;
 
 import business.DAO.IGenericDao;
 import entity.Technology;

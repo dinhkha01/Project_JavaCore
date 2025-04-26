@@ -8,44 +8,24 @@ DROP PROCEDURE IF EXISTS sp_DeleteTechnology //
 DROP PROCEDURE IF EXISTS sp_UpdateTechnology //
 DROP PROCEDURE IF EXISTS sp_GetTechnologyById //
 
--- 1. Get list of recruitment technologies
+-- 1. Get list of all technologies (including deleted ones)
 CREATE PROCEDURE sp_GetAllTechnologies()
 BEGIN
     SELECT * FROM technology
-    WHERE name NOT LIKE '%_deleted'
     ORDER BY id;
 END //
 
--- 2. Add new technology (with validation to prevent duplicate names)
+-- 2. Add new technology (without validation)
 CREATE PROCEDURE sp_AddTechnology(IN tech_name VARCHAR(100), OUT result INT)
 BEGIN
-     DECLARE existing_count INT DEFAULT 0;
-
-     -- Chỉ kiểm tra trùng tên với các công nghệ CHƯA bị xóa mềm
-     SELECT COUNT(*) INTO existing_count
-     FROM technology
-     WHERE name = tech_name
-       AND NOT name LIKE '%_deleted';  -- Loại trừ các bản ghi đã xóa
-
-     IF existing_count > 0 THEN
-         -- Tên đã tồn tại (trong bản ghi chưa xóa)
-         SET result = 0;
-     ELSE
-         -- Thêm mới nếu không trùng
-         INSERT INTO technology (name) VALUES (tech_name);
-         SET result = LAST_INSERT_ID();
-     END IF;
- END
+    INSERT INTO technology (name) VALUES (tech_name);
+    SET result = LAST_INSERT_ID();
+END //
 
 -- 3. Delete technology
 CREATE PROCEDURE sp_DeleteTechnology(IN tech_id INT, OUT result INT)
 BEGIN
-    DECLARE tech_name VARCHAR(100);
     DECLARE has_dependencies BOOLEAN DEFAULT FALSE;
-    DECLARE existing_deleted_count INT DEFAULT 0;
-
-    -- Get technology name
-    SELECT name INTO tech_name FROM technology WHERE id = tech_id;
 
     -- Check if technology has any dependencies
     SELECT EXISTS(
@@ -54,20 +34,18 @@ BEGIN
         SELECT 1 FROM recruitment_position_technology WHERE technologyId = tech_id
     ) INTO has_dependencies;
 
-    -- Check if deleted name already exists
-    SELECT COUNT(*) INTO existing_deleted_count FROM technology
-    WHERE name = CONCAT(tech_name, '_deleted') AND id != tech_id;
-
     IF has_dependencies = TRUE THEN
-        -- Has dependencies, rename to *_deleted
-        IF existing_deleted_count > 0 THEN
-            -- If name_deleted already exists, add timestamp
-            UPDATE technology SET name = CONCAT(tech_name, '_deleted_', UNIX_TIMESTAMP()) WHERE id = tech_id;
+        -- Has dependencies, soft delete by renaming
+        -- Đổi tên thành [tên cũ_deleted]
+        UPDATE technology
+        SET name = CONCAT(name, '_deleted')
+        WHERE id = tech_id;
+
+        IF ROW_COUNT() > 0 THEN
+            SET result = 1; -- Success (soft delete)
         ELSE
-            -- Rename to name_deleted
-            UPDATE technology SET name = CONCAT(tech_name, '_deleted') WHERE id = tech_id;
+            SET result = 0; -- Failed
         END IF;
-        SET result = 1; -- Success (soft delete)
     ELSE
         -- No dependencies, delete completely
         DELETE FROM technology WHERE id = tech_id;
@@ -79,33 +57,14 @@ BEGIN
     END IF;
 END //
 
--- 4. Update technology
+-- 4. Update technology (without validation)
 CREATE PROCEDURE sp_UpdateTechnology(IN tech_id INT, IN new_name VARCHAR(100), OUT result INT)
 BEGIN
-    DECLARE existing_count INT DEFAULT 0;
-    DECLARE current_name VARCHAR(100);
-
-    -- Get current name
-    SELECT name INTO current_name FROM technology WHERE id = tech_id;
-
-    -- If name is not changed
-    IF current_name = new_name THEN
-        SET result = 1; -- Success but nothing changed
+    UPDATE technology SET name = new_name WHERE id = tech_id;
+    IF ROW_COUNT() > 0 THEN
+        SET result = 1; -- Success updated
     ELSE
-        -- Check if new name already exists
-        SELECT COUNT(*) INTO existing_count FROM technology
-        WHERE (name = new_name OR name = CONCAT(new_name, '_deleted')) AND id != tech_id;
-
-        IF existing_count > 0 THEN
-            SET result = 0; -- Failed due to duplicate name
-        ELSE
-            UPDATE technology SET name = new_name WHERE id = tech_id;
-            IF ROW_COUNT() > 0 THEN
-                SET result = 2; -- Success updated
-            ELSE
-                SET result = 0; -- Failed
-            END IF;
-        END IF;
+        SET result = 0; -- Failed
     END IF;
 END //
 

@@ -1,0 +1,221 @@
+-- Set temporary delimiter
+DELIMITER //
+
+-- Drop existing procedures if they exist
+DROP PROCEDURE IF EXISTS sp_GetAllCandidates //
+DROP PROCEDURE IF EXISTS sp_ToggleCandidateStatus //
+DROP PROCEDURE IF EXISTS sp_ResetCandidatePassword //
+DROP PROCEDURE IF EXISTS sp_SearchCandidatesByName //
+DROP PROCEDURE IF EXISTS sp_FilterCandidatesByExperience //
+DROP PROCEDURE IF EXISTS sp_FilterCandidatesByAge //
+DROP PROCEDURE IF EXISTS sp_FilterCandidatesByGender //
+DROP PROCEDURE IF EXISTS sp_FilterCandidatesByTechnology //
+
+-- 1. Get list of all candidates
+CREATE PROCEDURE sp_GetAllCandidates()
+BEGIN
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.experience,
+        c.gender,
+        c.status,
+        c.description,
+        c.dob,
+        GROUP_CONCAT(t.name SEPARATOR ', ') AS technologies
+    FROM
+        candidate c
+    LEFT JOIN
+        candidate_technology ct ON c.id = ct.candidateId
+    LEFT JOIN
+        technology t ON ct.technologyId = t.id
+    GROUP BY
+        c.id
+    ORDER BY
+        c.id;
+END //
+
+-- 2. Toggle candidate account status (active/inactive)
+CREATE PROCEDURE sp_ToggleCandidateStatus(IN candidate_id INT, OUT result INT)
+BEGIN
+    DECLARE current_status VARCHAR(20);
+
+    -- Get current status
+    SELECT status INTO current_status FROM candidate WHERE id = candidate_id;
+
+    IF current_status IS NULL THEN
+        SET result = 0; -- Candidate not found
+    ELSE
+        IF current_status = 'active' THEN
+            UPDATE candidate SET status = 'inactive' WHERE id = candidate_id;
+        ELSE
+            UPDATE candidate SET status = 'active' WHERE id = candidate_id;
+        END IF;
+
+        IF ROW_COUNT() > 0 THEN
+            SET result = 1; -- Success
+        ELSE
+            SET result = 0; -- Failed
+        END IF;
+    END IF;
+END //
+
+-- 3. Reset candidate password
+CREATE PROCEDURE sp_ResetCandidatePassword(IN candidate_id INT, IN new_password VARCHAR(255), OUT result INT)
+BEGIN
+    UPDATE candidate SET password = new_password WHERE id = candidate_id;
+
+    IF ROW_COUNT() > 0 THEN
+        SET result = 1; -- Success
+    ELSE
+        SET result = 0; -- Failed or candidate not found
+    END IF;
+END //
+
+-- 4. Search candidates by name
+CREATE PROCEDURE sp_SearchCandidatesByName(IN search_name VARCHAR(100))
+BEGIN
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.experience,
+        c.gender,
+        c.status,
+        c.description,
+        c.dob,
+        GROUP_CONCAT(t.name SEPARATOR ', ') AS technologies
+    FROM
+        candidate c
+    LEFT JOIN
+        candidate_technology ct ON c.id = ct.candidateId
+    LEFT JOIN
+        technology t ON ct.technologyId = t.id
+    WHERE
+        c.name LIKE CONCAT('%', search_name, '%')
+    GROUP BY
+        c.id
+    ORDER BY
+        c.name;
+END //
+
+-- 5. Filter candidates by experience level
+CREATE PROCEDURE sp_FilterCandidatesByExperience(IN min_exp INT, IN max_exp INT)
+BEGIN
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.experience,
+        c.gender,
+        c.status,
+        c.description,
+        c.dob,
+        GROUP_CONCAT(t.name SEPARATOR ', ') AS technologies
+    FROM
+        candidate c
+    LEFT JOIN
+        candidate_technology ct ON c.id = ct.candidateId
+    LEFT JOIN
+        technology t ON ct.technologyId = t.id
+    WHERE
+        c.experience BETWEEN min_exp AND max_exp
+    GROUP BY
+        c.id
+    ORDER BY
+        c.experience;
+END //
+
+-- 6. Filter candidates by age
+CREATE PROCEDURE sp_FilterCandidatesByAge(IN min_age INT, IN max_age INT)
+BEGIN
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.experience,
+        c.gender,
+        c.status,
+        c.description,
+        c.dob,
+        TIMESTAMPDIFF(YEAR, c.dob, CURDATE()) AS age,
+        GROUP_CONCAT(t.name SEPARATOR ', ') AS technologies
+    FROM
+        candidate c
+    LEFT JOIN
+        candidate_technology ct ON c.id = ct.candidateId
+    LEFT JOIN
+        technology t ON ct.technologyId = t.id
+    WHERE
+        TIMESTAMPDIFF(YEAR, c.dob, CURDATE()) BETWEEN min_age AND max_age
+    GROUP BY
+        c.id
+    ORDER BY
+        c.dob DESC;
+END //
+
+-- 7. Filter candidates by gender
+CREATE PROCEDURE sp_FilterCandidatesByGender(IN gender_type VARCHAR(10))
+BEGIN
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.experience,
+        c.gender,
+        c.status,
+        c.description,
+        c.dob,
+        GROUP_CONCAT(t.name SEPARATOR ', ') AS technologies
+    FROM
+        candidate c
+    LEFT JOIN
+        candidate_technology ct ON c.id = ct.candidateId
+    LEFT JOIN
+        technology t ON ct.technologyId = t.id
+    WHERE
+        c.gender = gender_type
+    GROUP BY
+        c.id
+    ORDER BY
+        c.name;
+END //
+
+-- 8. Filter candidates by technology
+CREATE PROCEDURE sp_FilterCandidatesByTechnology(IN tech_id INT)
+BEGIN
+    SELECT
+        c.id,
+        c.name,
+        c.email,
+        c.phone,
+        c.experience,
+        c.gender,
+        c.status,
+        c.description,
+        c.dob,
+        GROUP_CONCAT(t.name SEPARATOR ', ') AS technologies
+    FROM
+        candidate c
+    JOIN
+        candidate_technology ct ON c.id = ct.candidateId
+    LEFT JOIN
+        candidate_technology ct2 ON c.id = ct2.candidateId
+    LEFT JOIN
+        technology t ON ct2.technologyId = t.id
+    WHERE
+        ct.technologyId = tech_id
+    GROUP BY
+        c.id
+    ORDER BY
+        c.name;
+END //
+
+-- Restore default delimiter
+DELIMITER ;

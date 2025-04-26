@@ -13,8 +13,7 @@ public class Candidate {
     private String status;
     private String description;
     private Date dob;
-    private Date createdAt;
-    private Date updatedAt;
+
 
     public Candidate(int id, String name, String email, String password, String phone, int experience, String gender, String status, String description, Date dob, Date createdAt, Date updatedAt) {
         this.id = id;
@@ -27,8 +26,7 @@ public class Candidate {
         this.status = status;
         this.description = description;
         this.dob = dob;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+
     }
 
     // Constructors
@@ -113,22 +111,6 @@ public class Candidate {
 
     public void setDob(Date dob) {
         this.dob = dob;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
     }
 
     @Override
