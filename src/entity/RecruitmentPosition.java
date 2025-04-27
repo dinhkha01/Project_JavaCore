@@ -12,8 +12,7 @@ public class RecruitmentPosition {
     private int minExperience;
     private Date createdDate;
     private Date expiredDate;
-    private Date createdAt;
-    private Date updatedAt;
+
 
     public RecruitmentPosition(int id, String name, String description, BigDecimal minSalary, BigDecimal maxSalary, int minExperience, Date createdDate, Date expiredDate, Date createdAt, Date updatedAt) {
         this.id = id;
@@ -24,8 +23,7 @@ public class RecruitmentPosition {
         this.minExperience = minExperience;
         this.createdDate = createdDate;
         this.expiredDate = expiredDate;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+
     }
 
     // Constructors
@@ -96,21 +94,6 @@ public class RecruitmentPosition {
         this.expiredDate = expiredDate;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(Date updatedAt) {
-        this.updatedAt = updatedAt;
-    }
 
     @Override
     public String toString() {

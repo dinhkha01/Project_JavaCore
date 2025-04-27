@@ -1,0 +1,184 @@
+-- SQL Procedures for Position Management
+	DROP PROCEDURE IF EXISTS sp_getAllPositions;
+    DROP PROCEDURE IF EXISTS sp_getPositionById;
+    DROP PROCEDURE IF EXISTS sp_addPosition;
+    DROP PROCEDURE IF EXISTS sp_addPositionTechnologies;
+    DROP PROCEDURE IF EXISTS sp_checkPositionDependencies;
+    DROP PROCEDURE IF EXISTS sp_deletePosition;
+    DROP PROCEDURE IF EXISTS sp_markPositionAsDeleted;
+    DROP PROCEDURE IF EXISTS sp_updatePosition;
+    DROP PROCEDURE IF EXISTS sp_clearPositionTechnologies;
+    DROP PROCEDURE IF EXISTS sp_getAllTechnologies;
+    DROP PROCEDURE IF EXISTS sp_getPositionTechnologies;
+    DROP PROCEDURE IF EXISTS sp_dropAllPositionProcedures;
+-- PROCEDURE: Get all active recruitment positions (excluding *deleted ones)
+DELIMITER //
+CREATE PROCEDURE sp_getAllPositions()
+BEGIN
+    SELECT * FROM recruitment_position
+    WHERE name NOT LIKE '%*deleted'
+    ORDER BY id ASC;
+END //
+DELIMITER ;
+
+-- PROCEDURE: Get a position by ID
+DELIMITER //
+CREATE PROCEDURE sp_getPositionById(IN posId INT)
+BEGIN
+    SELECT * FROM recruitment_position
+    WHERE id = posId AND name NOT LIKE '%*deleted';
+END //
+DELIMITER ;
+
+-- PROCEDURE: Add a new recruitment position
+DELIMITER //
+CREATE PROCEDURE sp_addPosition(
+    IN p_name VARCHAR(100),
+    IN p_description TEXT,
+    IN p_minSalary DECIMAL(12,2),
+    IN p_maxSalary DECIMAL(12,2),
+    IN p_minExperience INT,
+    IN p_expiredDate DATE,
+    OUT p_newId INT
+)
+BEGIN
+    INSERT INTO recruitment_position (
+        name,
+        description,
+        minSalary,
+        maxSalary,
+        minExperience,
+        createdDate,
+        expiredDate
+    ) VALUES (
+        p_name,
+        p_description,
+        p_minSalary,
+        p_maxSalary,
+        p_minExperience,
+        CURDATE(),
+        p_expiredDate
+    );
+
+    SET p_newId = LAST_INSERT_ID();
+END //
+DELIMITER ;
+
+-- PROCEDURE: Associate technologies with a position
+DELIMITER //
+CREATE PROCEDURE sp_addPositionTechnologies(
+    IN p_positionId INT,
+    IN p_technologyId INT
+)
+BEGIN
+    INSERT INTO recruitment_position_technology (
+        recruitmentPositionId,
+        technologyId
+    ) VALUES (
+        p_positionId,
+        p_technologyId
+    );
+END //
+DELIMITER ;
+
+-- PROCEDURE: Check if position has dependencies
+DELIMITER //
+CREATE PROCEDURE sp_checkPositionDependencies(
+    IN p_positionId INT,
+    OUT p_hasDependencies BOOLEAN
+)
+BEGIN
+    DECLARE recordCount INT;
+
+    SELECT COUNT(*) INTO recordCount
+    FROM application
+    WHERE recruitmentPositionId = p_positionId;
+
+    IF recordCount > 0 THEN
+        SET p_hasDependencies = TRUE;
+    ELSE
+        SET p_hasDependencies = FALSE;
+    END IF;
+END //
+DELIMITER ;
+
+-- PROCEDURE: Delete a position by ID
+DELIMITER //
+CREATE PROCEDURE sp_deletePosition(
+    IN p_positionId INT
+)
+BEGIN
+    DELETE FROM recruitment_position_technology
+    WHERE recruitmentPositionId = p_positionId;
+
+    DELETE FROM recruitment_position
+    WHERE id = p_positionId;
+END //
+DELIMITER ;
+
+-- PROCEDURE: Mark a position as deleted (append *deleted)
+DELIMITER //
+CREATE PROCEDURE sp_markPositionAsDeleted(
+    IN p_positionId INT
+)
+BEGIN
+    UPDATE recruitment_position
+    SET name = CONCAT(name, '*deleted')
+    WHERE id = p_positionId;
+END //
+DELIMITER ;
+
+-- PROCEDURE: Update a position
+DELIMITER //
+CREATE PROCEDURE sp_updatePosition(
+    IN p_id INT,
+    IN p_name VARCHAR(100),
+    IN p_description TEXT,
+    IN p_minSalary DECIMAL(12,2),
+    IN p_maxSalary DECIMAL(12,2),
+    IN p_minExperience INT,
+    IN p_expiredDate DATE
+)
+BEGIN
+    UPDATE recruitment_position
+    SET
+        name = p_name,
+        description = p_description,
+        minSalary = p_minSalary,
+        maxSalary = p_maxSalary,
+        minExperience = p_minExperience,
+        expiredDate = p_expiredDate
+    WHERE id = p_id;
+END //
+DELIMITER ;
+
+-- PROCEDURE: Clear position technologies
+DELIMITER //
+CREATE PROCEDURE sp_clearPositionTechnologies(
+    IN p_positionId INT
+)
+BEGIN
+    DELETE FROM recruitment_position_technology
+    WHERE recruitmentPositionId = p_positionId;
+END //
+DELIMITER ;
+
+-- PROCEDURE: Get all technologies
+DELIMITER //
+CREATE PROCEDURE sp_getAllTechnologies()
+BEGIN
+    SELECT * FROM technology
+    ORDER BY id ASC;
+END //
+DELIMITER ;
+
+-- PROCEDURE: Get technologies for a position
+DELIMITER //
+CREATE PROCEDURE sp_getPositionTechnologies(IN p_positionId INT)
+BEGIN
+    SELECT t.*
+    FROM technology t
+    JOIN recruitment_position_technology rpt ON t.id = rpt.technologyId
+    WHERE rpt.recruitmentPositionId = p_positionId;
+END //
+DELIMITER ;
