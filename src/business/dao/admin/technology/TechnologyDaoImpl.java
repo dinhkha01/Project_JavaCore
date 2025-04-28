@@ -1,4 +1,4 @@
-package business.DAO.admin.technology;
+package business.dao.admin.technology;
 
 import config.ConnectionDB;
 import entity.Technology;
@@ -11,7 +11,6 @@ public class TechnologyDaoImpl implements IAdminTechnology {
     private final Connection connection;
 
     public TechnologyDaoImpl() throws SQLException {
-        // Khởi tạo kết nối từ DBContext
         this.connection = ConnectionDB.openConnection();
     }
 

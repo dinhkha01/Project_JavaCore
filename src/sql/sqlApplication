@@ -1,0 +1,110 @@
+-- 1. Lấy danh sách đơn ứng tuyển (trừ đơn bị hủy)
+DELIMITER //
+CREATE PROCEDURE sp_GetAllActiveApplications()
+BEGIN
+    SELECT a.id, a.candidateId, a.recruitmentPositionId, a.cvUrl, a.progress,
+           c.name as candidateName, rp.name as positionName
+    FROM application a
+    JOIN candidate c ON a.candidateId = c.id
+    JOIN recruitment_position rp ON a.recruitmentPositionId = rp.id
+    WHERE a.destroyAt IS NULL
+    ORDER BY a.id;
+END //
+DELIMITER ;
+
+-- 2. Lọc đơn theo progress
+DELIMITER //
+CREATE PROCEDURE sp_FilterApplicationsByProgress(IN progressStatus VARCHAR(20))
+BEGIN
+    SELECT a.id, a.candidateId, a.recruitmentPositionId, a.cvUrl, a.progress,
+           c.name as candidateName, rp.name as positionName
+    FROM application a
+    JOIN candidate c ON a.candidateId = c.id
+    JOIN recruitment_position rp ON a.recruitmentPositionId = rp.id
+    WHERE a.progress = progressStatus AND a.destroyAt IS NULL
+    ORDER BY a.id;
+END //
+DELIMITER ;
+
+-- 3. Lọc đơn theo kết quả phỏng vấn
+DELIMITER //
+CREATE PROCEDURE sp_FilterApplicationsByResult(IN resultStatus VARCHAR(50))
+BEGIN
+    SELECT a.id, a.candidateId, a.recruitmentPositionId, a.cvUrl, a.progress,
+           a.interviewResult, c.name as candidateName, rp.name as positionName
+    FROM application a
+    JOIN candidate c ON a.candidateId = c.id
+    JOIN recruitment_position rp ON a.recruitmentPositionId = rp.id
+    WHERE a.interviewResult = resultStatus AND a.destroyAt IS NULL
+    ORDER BY a.id;
+END //
+DELIMITER ;
+
+-- 4. Hủy đơn ứng tuyển
+DELIMITER //
+CREATE PROCEDURE sp_CancelApplication(IN appId INT, IN reason TEXT)
+BEGIN
+    UPDATE application
+    SET destroyAt = CURRENT_TIMESTAMP,
+        destroyReason = reason,
+        updateAt = CURRENT_TIMESTAMP
+    WHERE id = appId;
+END //
+DELIMITER ;
+
+-- 5. Xem chi tiết đơn ứng tuyển và cập nhật trạng thái từ pending -> handling nếu cần
+DELIMITER //
+CREATE PROCEDURE sp_ViewApplicationDetail(IN appId INT)
+BEGIN
+    -- Cập nhật nếu là pending
+    UPDATE application
+    SET progress = 'handling',
+        updateAt = CURRENT_TIMESTAMP
+    WHERE id = appId AND progress = 'pending';
+
+    -- Trả về thông tin chi tiết
+    SELECT a.*, c.name as candidateName, c.email as candidateEmail,
+           c.phone as candidatePhone, c.experience as candidateExperience,
+           rp.name as positionName, rp.description as positionDescription,
+           rp.minSalary, rp.maxSalary, rp.minExperience
+    FROM application a
+    JOIN candidate c ON a.candidateId = c.id
+    JOIN recruitment_position rp ON a.recruitmentPositionId = rp.id
+    WHERE a.id = appId;
+END //
+DELIMITER ;
+
+-- 6. Chuyển đơn sang quá trình interviewing
+DELIMITER //
+CREATE PROCEDURE sp_SendInterviewInfo(
+    IN appId INT,
+    IN interviewLink VARCHAR(255),
+    IN interviewDateTime DATETIME
+)
+BEGIN
+    UPDATE application
+    SET progress = 'interviewing',
+        interviewRequestDate = CURRENT_TIMESTAMP,
+        interviewLink = interviewLink,
+        interviewTime = interviewDateTime,
+        updateAt = CURRENT_TIMESTAMP
+    WHERE id = appId;
+END //
+DELIMITER ;
+
+-- 7. Cập nhật kết quả đơn ứng tuyển
+DELIMITER //
+CREATE PROCEDURE sp_UpdateInterviewResult(
+    IN appId INT,
+    IN result VARCHAR(50),
+    IN note TEXT
+)
+BEGIN
+    UPDATE application
+    SET progress = 'done',
+        interviewResult = result,
+        interviewResultNote = note,
+        updateAt = CURRENT_TIMESTAMP
+    WHERE id = appId;
+END //
+DELIMITER ;

@@ -1,11 +1,9 @@
-package business.DAO.admin.position;
+package business.dao.admin.position;
 
-import business.DAO.admin.position.IAdminPosition;
 import config.ConnectionDB;
 import entity.RecruitmentPosition;
 import entity.Technology;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;

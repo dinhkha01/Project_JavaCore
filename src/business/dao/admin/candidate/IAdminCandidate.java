@@ -1,6 +1,6 @@
-package business.DAO.admin.candidate;
+package business.dao.admin.candidate;
 
-import business.DAO.IGenericDao;
+import business.dao.IGenericDao;
 import entity.Candidate;
 
 import java.util.List;

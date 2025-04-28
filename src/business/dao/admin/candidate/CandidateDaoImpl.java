@@ -1,13 +1,11 @@
-package business.DAO.admin.candidate;
+package business.dao.admin.candidate;
 
 import config.ConnectionDB;
 import entity.Candidate;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class CandidateDaoImpl implements IAdminCandidate {
 

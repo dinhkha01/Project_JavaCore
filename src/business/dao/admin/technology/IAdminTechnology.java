@@ -1,6 +1,6 @@
-package business.DAO.admin.technology;
+package business.dao.admin.technology;
 
-import business.DAO.IGenericDao;
+import business.dao.IGenericDao;
 import entity.Technology;
 
 public interface IAdminTechnology extends IGenericDao<Technology, Integer> {
