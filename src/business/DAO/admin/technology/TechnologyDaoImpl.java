@@ -1,4 +1,4 @@
-package business.dao.admin.technology;
+package business.DAO.admin.technology;
 
 import config.ConnectionDB;
 import entity.Technology;

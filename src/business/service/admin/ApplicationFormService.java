@@ -1,7 +1,7 @@
 package business.service.admin;
 
-import business.dao.admin.applicationForm.ApplicationDaoImpl;
-import business.dao.admin.applicationForm.IApplication;
+import business.DAO.admin.applicationForm.ApplicationDaoImpl;
+import business.DAO.admin.applicationForm.IApplication;
 
 import java.sql.Timestamp;
 import java.util.List;

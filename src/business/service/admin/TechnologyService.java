@@ -1,6 +1,6 @@
 package business.service.admin;
 
-import business.dao.admin.technology.TechnologyDaoImpl;
+import business.DAO.admin.technology.TechnologyDaoImpl;
 import entity.Technology;
 import validate.admin.ValidateTechnology;
 

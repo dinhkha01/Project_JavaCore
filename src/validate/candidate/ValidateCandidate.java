@@ -20,7 +20,7 @@ public class ValidateCandidate {
     }
 
 
-// Xác thực đăng ký cơ bản (chỉ name, email, password)
+    // Xác thực đăng ký cơ bản (chỉ name, email, password)
     public static Map<String, String> validateRegistrationBasic(Candidate candidate) {
         Map<String, String> errors = new HashMap<>();
 
@@ -68,7 +68,7 @@ public class ValidateCandidate {
         return DATE_FORMAT.format(date);
     }
 
-    // Validate login credentials
+    // Validate login credentials (Giữ lại phương thức gốc để tương thích ngược)
     public static Map<String, String> validateLogin(String email, String password) {
         Map<String, String> errors = new HashMap<>();
 
@@ -78,6 +78,32 @@ public class ValidateCandidate {
         } else if (!Pattern.matches(EMAIL_PATTERN, email)) {
             errors.put("email", "Email không hợp lệ");
         }
+
+        // Validate password
+        if (password == null || password.trim().isEmpty()) {
+            errors.put("password", "Mật khẩu không được để trống");
+        }
+
+        return errors;
+    }
+
+    // Nạp chồng phương thức - Chỉ validate email
+    public static Map<String, String> validateLoginEmail(String email) {
+        Map<String, String> errors = new HashMap<>();
+
+        // Validate email
+        if (email == null || email.trim().isEmpty()) {
+            errors.put("email", "Email không được để trống");
+        } else if (!Pattern.matches(EMAIL_PATTERN, email)) {
+            errors.put("email", "Email không hợp lệ");
+        }
+
+        return errors;
+    }
+
+    // Nạp chồng phương thức - Chỉ validate password
+    public static Map<String, String> validateLoginPassword(String password) {
+        Map<String, String> errors = new HashMap<>();
 
         // Validate password
         if (password == null || password.trim().isEmpty()) {

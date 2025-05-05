@@ -1,4 +1,4 @@
-package business.dao.candidate;
+package business.DAO.candidate;
 
 import config.ConnectionDB;
 import entity.Candidate;

@@ -66,35 +66,93 @@ public class MenuSystem {
 
     private static void loginCandidate(CandidateAuthen candidateAuthen) {
         Scanner scanner = new Scanner(System.in);
-        Map<String, String> errors = new HashMap<>();
-
         System.out.println("\n===== ĐĂNG NHẬP ỨNG VIÊN =====");
 
-        // Input email
-        System.out.print("Nhập email: ");
-        String email = scanner.nextLine().trim();
+        // Input và validate email
+        String email = "";
+        boolean isEmailValid = false;
+        while (!isEmailValid) {
+            System.out.print("Nhập email: ");
+            email = scanner.nextLine().trim();
 
-        // Input password
-        System.out.print("Nhập mật khẩu: ");
-        String password = scanner.nextLine().trim();
+            // Sử dụng phương thức validateLoginEmail để kiểm tra định dạng email
+            Map<String, String> emailErrors = ValidateCandidate.validateLoginEmail(email);
 
-        // Validate login credentials
-        errors = ValidateCandidate.validateLogin(email, password);
-
-        if (!errors.isEmpty()) {
-            System.out.println("\nĐăng nhập không thành công. Vui lòng sửa các lỗi sau:");
-            for (Map.Entry<String, String> entry : errors.entrySet()) {
-                System.out.println("- " + entry.getValue());
+            if (!emailErrors.isEmpty()) {
+                System.out.println("Lỗi: " + emailErrors.get("email"));
+            } else {
+                // Kiểm tra xem email có tồn tại trong hệ thống không
+                Candidate existingCandidate = candidateAuthen.findByEmail(email);
+                if (existingCandidate == null) {
+                    System.out.println("Lỗi: Email không tồn tại trong hệ thống. Vui lòng kiểm tra lại hoặc đăng ký tài khoản mới.");
+                } else {
+                    isEmailValid = true;
+                }
             }
-            return;
         }
 
+        // Input và validate password
+        String password = "";
+        boolean isPasswordValid = false;
+        while (!isPasswordValid) {
+            System.out.print("Nhập mật khẩu: ");
+            password = scanner.nextLine().trim();
+
+            // Sử dụng phương thức validateLoginPassword để kiểm tra định dạng password
+            Map<String, String> passwordErrors = ValidateCandidate.validateLoginPassword(password);
+
+            if (!passwordErrors.isEmpty()) {
+                System.out.println("Lỗi: " + passwordErrors.get("password"));
+            } else {
+                isPasswordValid = true;
+            }
+        }
+
+        // Đăng nhập sau khi đã validate email và password
         if (candidateAuthen.loginCandidate(email, password)) {
             MenuCandidate candidateMenu = new MenuCandidate(candidateAuthen);
             candidateMenu.showMainMenu();
+        } else {
+            // Nếu đăng nhập thất bại (mật khẩu không đúng, vì email đã được xác nhận tồn tại)
+            System.out.println("Mật khẩu không đúng! Vui lòng thử lại.");
+            // Cho phép người dùng nhập lại mật khẩu mà không cần nhập lại email
+            retryPasswordLogin(candidateAuthen, email);
         }
     }
 
+    // Phương thức mới để nhập lại mật khẩu mà không cần nhập lại email
+    private static void retryPasswordLogin(CandidateAuthen candidateAuthen, String email) {
+        Scanner scanner = new Scanner(System.in);
+        int attempts = 0;
+        final int MAX_ATTEMPTS = 5;
+
+        while (attempts < MAX_ATTEMPTS) {
+            System.out.print("Nhập mật khẩu: ");
+            String password = scanner.nextLine().trim();
+
+            // Xác thực định dạng password
+            Map<String, String> passwordErrors = ValidateCandidate.validateLoginPassword(password);
+
+            if (!passwordErrors.isEmpty()) {
+                System.out.println("Lỗi: " + passwordErrors.get("password"));
+                continue;
+            }
+
+            // Thử đăng nhập
+            if (candidateAuthen.loginCandidate(email, password)) {
+                MenuCandidate candidateMenu = new MenuCandidate(candidateAuthen);
+                candidateMenu.showMainMenu();
+                return;
+            } else {
+                attempts++;
+                if (attempts < MAX_ATTEMPTS) {
+                    System.out.println("Mật khẩu không đúng! Còn " + (MAX_ATTEMPTS - attempts) + " lần thử.");
+                }
+            }
+        }
+
+        System.out.println("Đã vượt quá số lần thử. Vui lòng thử lại sau.");
+    }
     private static void registerCandidate() {
         Scanner scanner = new Scanner(System.in);
         Candidate candidate = new Candidate();

@@ -1,7 +1,6 @@
-package business.dao.admin.applicationForm;
+package business.DAO.admin.applicationForm;
 
 import config.ConnectionDB;
-import entity.Application;
 
 import java.sql.*;
 import java.util.ArrayList;

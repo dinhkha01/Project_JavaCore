@@ -1,6 +1,6 @@
 package business.service.admin;
 
-import business.dao.admin.position.PositionDaoImpl;
+import business.DAO.admin.position.PositionDaoImpl;
 import entity.RecruitmentPosition;
 import entity.Technology;
 import validate.admin.ValidatePosition;

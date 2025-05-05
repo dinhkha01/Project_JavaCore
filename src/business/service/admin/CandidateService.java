@@ -1,6 +1,6 @@
 package business.service.admin;
 
-import business.dao.admin.candidate.CandidateDaoImpl;
+import business.DAO.admin.candidate.CandidateDaoImpl;
 import entity.Candidate;
 
 import java.util.List;

@@ -1,29 +1,38 @@
 package business.service.candidate;
 
-import business.dao.candidate.CandidateAuthenDaoImpl;
-import business.dao.candidate.ICandidateAuthen;
+import business.DAO.candidate.CandidateAuthenDaoImpl;
+import business.DAO.candidate.ICandidateAuthen;
 import entity.Candidate;
-import validate.candidate.ValidateCandidate;
 
 import java.io.*;
-import java.util.Map;
-import java.util.Scanner;
 
 public class CandidateAuthen {
     private static final String SESSION_FILE = "candidate_session.txt";
     private Candidate currentCandidate;
     private ICandidateAuthen candidateDao;
+
+    public CandidateAuthen() {
+        candidateDao = new CandidateAuthenDaoImpl();
+        loadSession();
+    }
+
+    // Kiểm tra xem email có tồn tại trong cơ sở dữ liệu hay không
     public boolean isEmailExists(String email) {
         return candidateDao.findByEmail(email) != null;
     }
 
-    // Thêm phương thức mới để lấy dữ liệu ứng viên theo email
+    // Lấy dữ liệu ứng viên theo email
     public Candidate findByEmail(String email) {
         return candidateDao.findByEmail(email);
     }
-    public CandidateAuthen() {
-        candidateDao = new CandidateAuthenDaoImpl();
-        loadSession();
+
+    // Xác thực mật khẩu cho một email cụ thể (chỉ kiểm tra mật khẩu)
+    public boolean validatePassword(String email, String password) {
+        Candidate candidate = candidateDao.findByEmail(email);
+        if (candidate == null) {
+            return false; // Email không tồn tại
+        }
+        return candidate.getPassword().equals(password);
     }
 
     // Kiểm tra xem đã có phiên đăng nhập không
@@ -67,10 +76,8 @@ public class CandidateAuthen {
             if (candidate != null) {
                 currentCandidate = candidate;
                 saveSession(); // Lưu phiên đăng nhập
-                System.out.println("Đăng nhập thành công!");
                 return true;
             } else {
-                System.err.println("Sai email hoặc mật khẩu!");
                 return false;
             }
         } catch (Exception e) {

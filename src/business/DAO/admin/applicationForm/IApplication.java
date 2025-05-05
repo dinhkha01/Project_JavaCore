@@ -1,6 +1,6 @@
-package business.dao.admin.applicationForm;
+package business.DAO.admin.applicationForm;
 
-import business.dao.IGenericDao;
+import business.DAO.IGenericDao;
 
 import java.sql.Timestamp;
 import java.util.List;

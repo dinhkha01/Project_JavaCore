@@ -1,4 +1,4 @@
-package business.dao.admin.position;
+package business.DAO.admin.position;
 
 import config.ConnectionDB;
 import entity.RecruitmentPosition;

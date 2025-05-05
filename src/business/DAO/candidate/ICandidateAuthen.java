@@ -1,6 +1,6 @@
-package business.dao.candidate;
+package business.DAO.candidate;
 
-import business.dao.IGenericDao;
+import business.DAO.IGenericDao;
 import entity.Candidate;
 
 public interface ICandidateAuthen extends IGenericDao<Candidate, Integer> {
