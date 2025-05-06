@@ -48,11 +48,11 @@ public class MenuCandidate {
 
             switch (choice) {
                 case 1:
-                    MenuInfor menuInfo = new MenuInfor();
+                    MenuInfor menuInfo = new MenuInfor(currentCandidate);
                     menuInfo.showMenu();
                     break;
                 case 2:
-                    MenuApply menuApply = new MenuApply();
+                    MenuApply menuApply = new MenuApply(currentCandidate);
                     menuApply.showMenu();
                     break;
                 case 3:

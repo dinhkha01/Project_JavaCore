@@ -3,10 +3,9 @@ import business.service.candidate.CandidateAuthen;
 import entity.Candidate;
 import presentation.admin.MenuAdmin;
 import presentation.candidate.MenuCandidate;
-import validate.candidate.ValidateCandidate;
+import validate.candidate.ValidateCandidateAuthen;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class MenuSystem {
     public static void main(String[] args) {
@@ -76,7 +75,7 @@ public class MenuSystem {
             email = scanner.nextLine().trim();
 
             // Sử dụng phương thức validateLoginEmail để kiểm tra định dạng email
-            Map<String, String> emailErrors = ValidateCandidate.validateLoginEmail(email);
+            Map<String, String> emailErrors = ValidateCandidateAuthen.validateLoginEmail(email);
 
             if (!emailErrors.isEmpty()) {
                 System.out.println("Lỗi: " + emailErrors.get("email"));
@@ -99,7 +98,7 @@ public class MenuSystem {
             password = scanner.nextLine().trim();
 
             // Sử dụng phương thức validateLoginPassword để kiểm tra định dạng password
-            Map<String, String> passwordErrors = ValidateCandidate.validateLoginPassword(password);
+            Map<String, String> passwordErrors = ValidateCandidateAuthen.validateLoginPassword(password);
 
             if (!passwordErrors.isEmpty()) {
                 System.out.println("Lỗi: " + passwordErrors.get("password"));
@@ -131,7 +130,7 @@ public class MenuSystem {
             String password = scanner.nextLine().trim();
 
             // Xác thực định dạng password
-            Map<String, String> passwordErrors = ValidateCandidate.validateLoginPassword(password);
+            Map<String, String> passwordErrors = ValidateCandidateAuthen.validateLoginPassword(password);
 
             if (!passwordErrors.isEmpty()) {
                 System.out.println("Lỗi: " + passwordErrors.get("password"));
@@ -167,10 +166,15 @@ public class MenuSystem {
             String name = scanner.nextLine().trim();
             candidate.setName(name);
 
+            Map<String, String> nameErrors = new HashMap<>();
             if (name == null || name.trim().isEmpty()) {
-                System.out.println("Lỗi: Tên không được để trống");
+                nameErrors.put("name", "Tên không được để trống");
             } else if (name.length() < 3 || name.length() > 100) {
-                System.out.println("Lỗi: Tên phải có từ 3 đến 100 ký tự");
+                nameErrors.put("name", "Tên phải có từ 3 đến 100 ký tự");
+            }
+
+            if (!nameErrors.isEmpty()) {
+                System.out.println("Lỗi: " + nameErrors.get("name"));
             } else {
                 isNameValid = true;
             }
@@ -183,10 +187,10 @@ public class MenuSystem {
             String email = scanner.nextLine().trim();
             candidate.setEmail(email);
 
-            if (email == null || email.trim().isEmpty()) {
-                System.out.println("Lỗi: Email không được để trống");
-            } else if (!email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")) {
-                System.out.println("Lỗi: Email không hợp lệ");
+            Map<String, String> emailErrors = ValidateCandidateAuthen.validateLoginEmail(email);
+
+            if (!emailErrors.isEmpty()) {
+                System.out.println("Lỗi: " + emailErrors.get("email"));
             } else if (candidateAuthen.isEmailExists(email)) {
                 // Email đã tồn tại trong hệ thống
                 System.out.println("Lỗi: Email này đã được đăng ký. Vui lòng sử dụng email khác");
@@ -202,8 +206,10 @@ public class MenuSystem {
             String password = scanner.nextLine().trim();
             candidate.setPassword(password);
 
-            if (password == null || password.trim().isEmpty()) {
-                System.out.println("Lỗi: Mật khẩu không được để trống");
+            Map<String, String> passwordErrors = ValidateCandidateAuthen.validateLoginPassword(password);
+
+            if (!passwordErrors.isEmpty()) {
+                System.out.println("Lỗi: " + passwordErrors.get("password"));
             } else if (password.length() < 8) {
                 System.out.println("Lỗi: Mật khẩu phải có ít nhất 8 ký tự");
             } else {
