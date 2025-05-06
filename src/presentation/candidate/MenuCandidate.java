@@ -56,7 +56,7 @@ public class MenuCandidate {
                     menuApply.showMenu();
                     break;
                 case 3:
-                    MenuApplied menuApplied = new MenuApplied();
+                    MenuApplied menuApplied = new MenuApplied(currentCandidate.getId());
                     menuApplied.showMenu();
                     break;
                 case 4:

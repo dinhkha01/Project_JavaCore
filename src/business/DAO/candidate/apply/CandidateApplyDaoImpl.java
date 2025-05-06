@@ -89,6 +89,60 @@ public class CandidateApplyDaoImpl implements ICandidateApply {
         }
     }
 
+    /**
+     * Get application by ID
+     * @param applicationId The application ID
+     * @return Application object if found, null otherwise
+     */
+    public Application getApplicationById(int applicationId) {
+        Application application = null;
+        try {
+            conn = ConnectionDB.openConnection();
+            cstmt = conn.prepareCall("{CALL sp_GetApplicationDetails(?)}");
+            cstmt.setInt(1, applicationId);
+            rs = cstmt.executeQuery();
+
+            if (rs.next()) {
+                application = mapResultSetToApplication(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources();
+        }
+        return application;
+    }
+
+    /**
+     * Update interview response for an application
+     * @param applicationId Application ID
+     * @param response Response text ("Đã xác nhận" or "Từ chối")
+     * @param reason Reason for rejection (can be null if confirmed)
+     * @return true if successful, false otherwise
+     */
+    public boolean updateInterviewResponse(int applicationId, String response, String reason) {
+        try {
+            conn = ConnectionDB.openConnection();
+            cstmt = conn.prepareCall("{CALL sp_UpdateInterviewResponse(?, ?, ?)}");
+            cstmt.setInt(1, applicationId);
+            cstmt.setString(2, response);
+
+            if (reason != null && !reason.isEmpty()) {
+                cstmt.setString(3, reason);
+            } else {
+                cstmt.setNull(3, Types.VARCHAR);
+            }
+
+            int rowsAffected = cstmt.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            closeResources();
+        }
+    }
+
     public List<Application> getApplicationsByCandidateId(int candidateId) {
         List<Application> applications = new ArrayList<>();
         try {

@@ -103,3 +103,34 @@ GROUP BY rp.id
 ORDER BY rp.id ASC;
 END //
 DELIMITER ;
+
+-- 1. Get application details by ID
+DELIMITER //
+CREATE PROCEDURE sp_GetApplicationById(IN p_applicationId INT)
+BEGIN
+SELECT a.*, c.name as candidateName, rp.name as positionName
+FROM application a
+         JOIN candidate c ON a.candidateId = c.id
+         JOIN recruitment_position rp ON a.recruitmentPositionId = rp.id
+WHERE a.id = p_applicationId;
+END //
+DELIMITER ;
+    -- 2. Update interview response
+DELIMITER //
+CREATE PROCEDURE sp_UpdateInterviewResponse(
+    IN p_applicationId INT,
+    IN p_response VARCHAR(100),
+    IN p_reason TEXT
+)
+BEGIN
+UPDATE application
+SET interviewRequestResult = p_response,
+    updateAt = NOW(),
+    destroyReason = CASE
+                        WHEN p_response = 'Từ chối' THEN p_reason
+                        ELSE destroyReason
+        END
+WHERE id = p_applicationId;
+END //
+DELIMITER ;
+

@@ -71,6 +71,26 @@ public class ApplicationService {
     }
 
     /**
+     * Get application details by ID
+     * @param applicationId The application ID
+     * @return Application object
+     */
+    public Application getApplicationById(int applicationId) {
+        return candidateApplyDao.getApplicationById(applicationId);
+    }
+
+    /**
+     * Update interview response for an application
+     * @param applicationId Application ID
+     * @param response Response text ("Đã xác nhận" or "Từ chối")
+     * @param reason Reason for rejection (can be null if confirmed)
+     * @return true if successful, false otherwise
+     */
+    public boolean updateInterviewResponse(int applicationId, String response, String reason) {
+        return candidateApplyDao.updateInterviewResponse(applicationId, response, reason);
+    }
+
+    /**
      * Cancel an application
      * @param applicationId The application ID to cancel
      */

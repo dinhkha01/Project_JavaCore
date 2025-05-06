@@ -1,32 +1,29 @@
 package presentation.candidate;
 
 import business.service.candidate.apply.ApplicationService;
-import business.service.candidate.infor.CandidateServiceImpl;
-import entity.Application;
 import entity.Candidate;
 import entity.RecruitmentPosition;
-import validate.candidate.ValidateCandidate;
 
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class MenuApply {
     private final Scanner scanner = new Scanner(System.in);
     private final ApplicationService applicationService = new ApplicationService();
-    // Typically this would be passed from a session or authentication service
-    private Candidate currentCandidate;
+    private final Candidate currentCandidate;
+    private final MenuApplied menuApplied;
+
     public MenuApply(Candidate currentCandidate) {
         this.currentCandidate = currentCandidate;
+        this.menuApplied = new MenuApplied(currentCandidate.getId());
     }
-
 
     public void showMenu() {
         while (true) {
             System.out.println("\n=== XEM VÀ NỘP ĐƠN ỨNG TUYỂN ===");
             System.out.println("1. Xem danh sách vị trí đang hoạt động");
             System.out.println("2. Xem chi tiết và apply");
-            System.out.println("3. Xem đơn ứng tuyển của tôi");
+            System.out.println("3. Quản lý đơn ứng tuyển của tôi");
             System.out.println("4. Quay về menu chính");
             System.out.print("Nhập lựa chọn: ");
 
@@ -41,7 +38,7 @@ public class MenuApply {
                         viewDetailAndApply();
                         break;
                     case 3:
-                        viewMyApplications();
+                        menuApplied.showMenu(); // Use the MenuApplied for application management
                         break;
                     case 4:
                         return;
@@ -109,10 +106,25 @@ public class MenuApply {
                     return;
                 }
 
-                Application application = applicationService.applyForPosition(currentCandidate.getId(), positionId, cvUrl);
+                // Check if user already applied for this position
+                boolean alreadyApplied = false;
+                for (var app : applicationService.getApplicationsByCandidateId(currentCandidate.getId())) {
+                    if (app.getRecruitmentPositionId() == positionId && app.getDestroyAt() == null) {
+                        alreadyApplied = true;
+                        break;
+                    }
+                }
+
+                if (alreadyApplied) {
+                    System.out.println("Bạn đã nộp đơn vào vị trí này rồi!");
+                    return;
+                }
+
+                var application = applicationService.applyForPosition(currentCandidate.getId(), positionId, cvUrl);
 
                 if (application != null) {
                     System.out.println("Đã nộp đơn ứng tuyển thành công vào vị trí: " + position.getName());
+                    System.out.println("Bạn có thể theo dõi đơn trong mục 'Quản lý đơn ứng tuyển của tôi'");
                 } else {
                     System.out.println("Có lỗi xảy ra khi nộp đơn!");
                 }
@@ -120,35 +132,6 @@ public class MenuApply {
         } catch (NumberFormatException e) {
             System.out.println("ID vị trí phải là số!");
         }
-    }
-
-    private void viewMyApplications() {
-        System.out.println("\n=== ĐƠN ỨNG TUYỂN CỦA TÔI ===");
-        List<Application> applications = applicationService.getApplicationsByCandidateId(currentCandidate.getId());
-
-        if (applications.isEmpty()) {
-            System.out.println("Bạn chưa nộp đơn ứng tuyển nào!");
-            return;
-        }
-
-        System.out.println("-------------------------------------------------------------");
-        System.out.printf("%-5s| %-20s| %-15s| %s\n", "ID", "Vị trí ID", "Tiến độ", "CV URL");
-        System.out.println("-------------------------------------------------------------");
-
-        for (Application app : applications) {
-            RecruitmentPosition position = applicationService.getPositionById(app.getRecruitmentPositionId());
-            String positionName = position != null ? position.getName() : "Unknown";
-
-            System.out.printf("%-5d| %-20s| %-15s| %s\n",
-                    app.getId(),
-                    app.getRecruitmentPositionId() + " - " + positionName,
-                    app.getProgress(),
-                    app.getCvUrl());
-        }
-        System.out.println("-------------------------------------------------------------");
-
-        System.out.println("\nNhấn Enter để tiếp tục...");
-        scanner.nextLine();
     }
 
     private String truncateString(String str, int maxLength) {
