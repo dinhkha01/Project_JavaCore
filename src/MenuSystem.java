@@ -70,6 +70,8 @@ public class MenuSystem {
         // Input và validate email
         String email = "";
         boolean isEmailValid = false;
+        Candidate existingCandidate = null;
+
         while (!isEmailValid) {
             System.out.print("Nhập email: ");
             email = scanner.nextLine().trim();
@@ -81,10 +83,14 @@ public class MenuSystem {
                 System.out.println("Lỗi: " + emailErrors.get("email"));
             } else {
                 // Kiểm tra xem email có tồn tại trong hệ thống không
-                Candidate existingCandidate = candidateAuthen.findByEmail(email);
+                existingCandidate = candidateAuthen.findByEmail(email);
                 if (existingCandidate == null) {
                     System.out.println("Lỗi: Email không tồn tại trong hệ thống. Vui lòng kiểm tra lại hoặc đăng ký tài khoản mới.");
                 } else {
+                    if ("inactive".equalsIgnoreCase(existingCandidate.getStatus())) {
+                        System.out.println("Lỗi: Tài khoản này đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.");
+                        return;
+                    }
                     isEmailValid = true;
                 }
             }
@@ -112,7 +118,7 @@ public class MenuSystem {
             MenuCandidate candidateMenu = new MenuCandidate(candidateAuthen);
             candidateMenu.showMainMenu();
         } else {
-            // Nếu đăng nhập thất bại (mật khẩu không đúng, vì email đã được xác nhận tồn tại)
+            // Nếu đăng nhập thất bại (mật khẩu không đúng, vì email đã được xác nhận tồn tại và không bị khóa)
             System.out.println("Mật khẩu không đúng! Vui lòng thử lại.");
             // Cho phép người dùng nhập lại mật khẩu mà không cần nhập lại email
             retryPasswordLogin(candidateAuthen, email);
@@ -152,6 +158,7 @@ public class MenuSystem {
 
         System.out.println("Đã vượt quá số lần thử. Vui lòng thử lại sau.");
     }
+
     private static void registerCandidate() {
         Scanner scanner = new Scanner(System.in);
         Candidate candidate = new Candidate();

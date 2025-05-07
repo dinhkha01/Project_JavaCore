@@ -74,6 +74,12 @@ public class CandidateAuthen {
         try {
             Candidate candidate = candidateDao.findByEmailAndPassword(email, password);
             if (candidate != null) {
+                // Kiểm tra trạng thái tài khoản
+                if ("inactive".equalsIgnoreCase(candidate.getStatus())) {
+                    System.out.println("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.");
+                    return false;
+                }
+
                 currentCandidate = candidate;
                 saveSession(); // Lưu phiên đăng nhập
                 return true;
@@ -126,6 +132,13 @@ public class CandidateAuthen {
                 // Lấy thông tin candidate từ database
                 Candidate candidate = candidateDao.findByEmailAndPassword(email, password);
                 if (candidate != null && candidate.getId() == id) {
+                    // Kiểm tra trạng thái tài khoản khi tải phiên đăng nhập
+                    if ("locked".equalsIgnoreCase(candidate.getStatus())) {
+                        System.out.println("Tài khoản của bạn đã bị khóa. Phiên đăng nhập trước đó không hợp lệ.");
+                        clearSession();
+                        return;
+                    }
+
                     currentCandidate = candidate;
                     System.out.println("Đã tải phiên đăng nhập của ứng viên: " + email);
                 }
