@@ -2,22 +2,33 @@ package presentation.candidate;
 
 import business.service.candidate.infor.CandidateServiceImpl;
 import business.service.candidate.infor.ICandidateService;
+import business.service.candidate.technology.CandidateTechnologyServiceImpl;
+import business.service.candidate.technology.ICandidateTechnologyService;
+import business.service.technology.ITechnologyService;
+import business.service.technology.TechnologyServiceImpl;
 import entity.Candidate;
+import entity.Technology;
 import validate.InputMethod;
 import validate.candidate.ValidateCandidate;
 
 import java.sql.Date;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Scanner;
 
 public class MenuInfor {
     private Scanner scanner = new Scanner(System.in);
     private ICandidateService candidateService;
+    private ITechnologyService technologyService;
+    private ICandidateTechnologyService candidateTechnologyService;
     private ValidateCandidate validateCandidate;
     private Candidate currentCandidate;
+
     public MenuInfor(Candidate currentCandidate) {
         this.candidateService = new CandidateServiceImpl();
+        this.technologyService = new TechnologyServiceImpl();
+        this.candidateTechnologyService = new CandidateTechnologyServiceImpl();
         this.validateCandidate = new ValidateCandidate();
         this.currentCandidate = currentCandidate;
     }
@@ -27,11 +38,11 @@ public class MenuInfor {
             System.out.println("\n=== QUẢN LÝ THÔNG TIN CÁ NHÂN ===");
             System.out.println("1. Cập nhật thông tin cá nhân");
             System.out.println("2. Đổi mật khẩu");
-            System.out.println("3. Quay về menu chính");
+            System.out.println("3. Quản lý công nghệ");
+            System.out.println("4. Quay về menu chính");
             System.out.print("Nhập lựa chọn: ");
 
             int choice = Integer.parseInt(scanner.nextLine());
-
 
             switch (choice) {
                 case 1:
@@ -41,6 +52,9 @@ public class MenuInfor {
                     changePassword();
                     break;
                 case 3:
+                    manageTechnologies();
+                    break;
+                case 4:
                     return;
                 default:
                     System.out.println("Lựa chọn không hợp lệ!");
@@ -254,40 +268,223 @@ public class MenuInfor {
 
                 // Nhập mật khẩu mới
                 String newPassword;
-                while (true) {
-                    newPassword = InputMethod.inputString(scanner, "Nhập mật khẩu mới: ", "Mật khẩu mới không được để trống");
+                boolean isValidNewPassword = false;
+
+                while (!isValidNewPassword) {
+                    newPassword = InputMethod.inputString(scanner, "Nhập mật khẩu mới: ", "Mật khẩu không được để trống");
+
+                    // Kiểm tra tính hợp lệ của mật khẩu mới
                     if (validateCandidate.isValidPassword(newPassword)) {
-                        if (!newPassword.equals(oldPassword)) {
-                            break;
+                        // Xác nhận mật khẩu mới
+                        String confirmPassword = InputMethod.inputString(scanner, "Xác nhận mật khẩu mới: ", "Xác nhận mật khẩu không được để trống");
+
+                        if (newPassword.equals(confirmPassword)) {
+                            // Thực hiện đổi mật khẩu
+                            boolean success = candidateService.changePassword(identifier, oldPassword, newPassword);
+
+                            if (success) {
+                                System.out.println("Đổi mật khẩu thành công!");
+                                return;
+                            } else {
+                                System.err.println("Đổi mật khẩu thất bại! Vui lòng thử lại sau.");
+                                return;
+                            }
+                        } else {
+                            System.err.println("Mật khẩu xác nhận không khớp với mật khẩu mới!");
                         }
-                        System.out.println("Mật khẩu mới phải khác mật khẩu cũ!");
                     } else {
-                        System.out.println("Mật khẩu mới phải có độ dài từ 8 đến 20 ký tự!");
+                        System.err.println("Mật khẩu không hợp lệ! Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số.");
                     }
-                }
-
-                // Xác nhận mật khẩu mới
-                String confirmPassword = InputMethod.inputString(scanner, "Xác nhận mật khẩu mới: ", "Xác nhận mật khẩu không được để trống");
-                if (!newPassword.equals(confirmPassword)) {
-                    System.out.println("Xác nhận mật khẩu không khớp với mật khẩu mới!");
-                    return;
-                }
-
-                // Thực hiện đổi mật khẩu
-                boolean success = candidateService.changePassword(identifier, oldPassword, newPassword);
-                if (success) {
-                    System.out.println("Đổi mật khẩu thành công!");
-                } else {
-                    System.err.println("Đổi mật khẩu thất bại! Vui lòng thử lại sau.");
                 }
             } else {
                 attempts++;
-                if (attempts < MAX_ATTEMPTS) {
-                    System.err.println("Mật khẩu cũ không đúng! Còn " + (MAX_ATTEMPTS - attempts) + " lần thử.");
-                } else {
+                System.err.println("Mật khẩu cũ không đúng! Còn " + (MAX_ATTEMPTS - attempts) + " lần thử.");
+
+                if (attempts >= MAX_ATTEMPTS) {
                     System.err.println("Bạn đã nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.");
+                    return;
                 }
             }
+        }
+    }
+
+    private void manageTechnologies() {
+        while (true) {
+            System.out.println("\n=== QUẢN LÝ CÔNG NGHỆ ===");
+            System.out.println("1. Xem danh sách công nghệ đã đăng ký");
+            System.out.println("2. Thêm công nghệ mới");
+            System.out.println("3. Xóa công nghệ");
+            System.out.println("0. Quay lại");
+            System.out.print("Nhập lựa chọn: ");
+
+            int choice;
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.err.println("Vui lòng nhập một số!");
+                continue;
+            }
+
+            switch (choice) {
+                case 0:
+                    return;
+                case 1:
+                    viewRegisteredTechnologies();
+                    break;
+                case 2:
+                    addTechnology();
+                    break;
+                case 3:
+                    removeTechnology();
+                    break;
+                default:
+                    System.out.println("Lựa chọn không hợp lệ!");
+                    break;
+            }
+        }
+    }
+
+    private void viewRegisteredTechnologies() {
+        System.out.println("\n=== DANH SÁCH CÔNG NGHỆ ĐÃ ĐĂNG KÝ ===");
+        List<Technology> technologies = candidateTechnologyService.getCandidateTechnologies(currentCandidate.getId());
+
+        if (technologies.isEmpty()) {
+            System.out.println("Bạn chưa đăng ký công nghệ nào!");
+        } else {
+            System.out.println("Số lượng: " + technologies.size());
+            System.out.println("ID\tTên công nghệ");
+            System.out.println("--------------------");
+
+            for (Technology tech : technologies) {
+                System.out.println(tech.getId() + "\t" + tech.getName());
+            }
+        }
+    }
+
+    private void addTechnology() {
+        System.out.println("\n=== THÊM CÔNG NGHỆ ===");
+
+        // Lấy danh sách tất cả công nghệ trong hệ thống
+        List<Technology> allTechnologies = technologyService.getAllTechnologies();
+
+        // Lấy danh sách công nghệ đã đăng ký của ứng viên hiện tại
+        List<Technology> registeredTechnologies = candidateTechnologyService.getCandidateTechnologies(currentCandidate.getId());
+
+        if (allTechnologies.isEmpty()) {
+            System.out.println("Không có công nghệ nào trong hệ thống!");
+            return;
+        }
+
+        // Hiển thị danh sách tất cả công nghệ và đánh dấu những công nghệ đã đăng ký
+        System.out.println("Danh sách tất cả công nghệ:");
+        System.out.println("ID\tTên công nghệ\tĐã đăng ký");
+        System.out.println("--------------------------------");
+        System.out.println("(Những công nghệ có dấu X là công nghệ bạn đã đăng ký, không thể thêm lại)");
+
+        for (Technology tech : allTechnologies) {
+            boolean isRegistered = false;
+            for (Technology regTech : registeredTechnologies) {
+                if (regTech.getId() == tech.getId()) {
+                    isRegistered = true;
+                    break;
+                }
+            }
+            System.out.println(tech.getId() + "\t" + tech.getName() + "\t\t" + (isRegistered ? "X" : ""));
+        }
+
+        // Chọn công nghệ để thêm
+        System.out.println("\nLƯU Ý: Vui lòng nhập ID của công nghệ (cột đầu tiên) mà bạn muốn thêm");
+        System.out.println("Bạn chỉ có thể thêm những công nghệ chưa có dấu X.");
+        try {
+            int techId = InputMethod.inputInt(scanner, "Nhập ID công nghệ muốn thêm (0 để hủy): ");
+
+            if (techId == 0) {
+                return;
+            }
+
+            // Kiểm tra xem công nghệ có tồn tại không
+            Technology selectedTech = technologyService.getTechnologyById(techId);
+            if (selectedTech == null) {
+                System.err.println("Công nghệ không tồn tại!");
+                return;
+            }
+
+            // Kiểm tra xem đã đăng ký công nghệ này chưa
+            if (candidateTechnologyService.hasTechnology(currentCandidate.getId(), techId)) {
+                System.err.println("Bạn đã đăng ký công nghệ này rồi!");
+                return;
+            }
+
+            // Thêm công nghệ cho ứng viên
+            boolean success = candidateTechnologyService.addTechnologyToCandidate(currentCandidate.getId(), techId);
+            if (success) {
+                System.out.println("Thêm công nghệ " + selectedTech.getName() + " thành công!");
+            } else {
+                System.err.println("Thêm công nghệ thất bại!");
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("ID công nghệ phải là số nguyên!");
+        }
+    }
+
+    private void removeTechnology() {
+        System.out.println("\n=== XÓA CÔNG NGHỆ ===");
+
+        // Hiển thị danh sách công nghệ đã đăng ký
+        List<Technology> registeredTechnologies = candidateTechnologyService.getCandidateTechnologies(currentCandidate.getId());
+
+        if (registeredTechnologies.isEmpty()) {
+            System.out.println("Bạn chưa đăng ký công nghệ nào!");
+            return;
+        }
+
+        System.out.println("Danh sách công nghệ đã đăng ký:");
+        System.out.println("ID\tTên công nghệ");
+        System.out.println("--------------------");
+
+        for (Technology tech : registeredTechnologies) {
+            System.out.println(tech.getId() + "\t" + tech.getName());
+        }
+
+        System.out.println("Nhập ID công nghệ muốn xóa");
+        try {
+            int techId = InputMethod.inputInt(scanner, "Nhập ID công nghệ muốn xóa (0 để hủy): ");
+
+            if (techId == 0) {
+                return;
+            }
+
+            // Kiểm tra xem công nghệ có tồn tại và đã đăng ký chưa
+            boolean hasRegistered = false;
+            String techName = "";
+
+            for (Technology tech : registeredTechnologies) {
+                if (tech.getId() == techId) {
+                    hasRegistered = true;
+                    techName = tech.getName();
+                    break;
+                }
+            }
+
+            if (!hasRegistered) {
+                System.err.println("Bạn chưa đăng ký công nghệ này hoặc công nghệ không tồn tại!");
+                return;
+            }
+
+            // Xác nhận xóa
+            System.out.println("Bạn có chắc chắn muốn xóa công nghệ " + techName + "? (Y/N)");
+            String confirm = scanner.nextLine();
+
+            if (confirm.equalsIgnoreCase("Y")) {
+                boolean success = candidateTechnologyService.removeTechnologyFromCandidate(currentCandidate.getId(), techId);
+                if (success) {
+                    System.out.println("Xóa công nghệ " + techName + " thành công!");
+                } else {
+                    System.err.println("Xóa công nghệ thất bại!");
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("ID công nghệ phải là số nguyên!");
         }
     }
 }
