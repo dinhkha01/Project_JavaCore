@@ -7,7 +7,7 @@ public class Application {
     private int candidateId;
     private int recruitmentPositionId;
     private String cvUrl;
-    private String progress; // enum: pending, handling, interviewing, done
+    private String progress;
     private Timestamp interviewRequestDate;
     private String interviewRequestResult;
     private String interviewLink;

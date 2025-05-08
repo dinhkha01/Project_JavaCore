@@ -10,6 +10,8 @@ import entity.Candidate;
 import entity.Technology;
 import validate.InputMethod;
 import validate.candidate.ValidateCandidate;
+import config.ColorPrintUtil;
+import config.PrintColor;
 
 import java.sql.Date;
 import java.text.ParseException;
@@ -35,14 +37,20 @@ public class MenuInfor {
 
     public void showMenu() {
         while (true) {
-            System.out.println("\n=== QUẢN LÝ THÔNG TIN CÁ NHÂN ===");
-            System.out.println("1. Cập nhật thông tin cá nhân");
-            System.out.println("2. Đổi mật khẩu");
-            System.out.println("3. Quản lý công nghệ");
-            System.out.println("4. Quay về menu chính");
-            System.out.print("Nhập lựa chọn: ");
+            ColorPrintUtil.printHeader("QUẢN LÝ THÔNG TIN CÁ NHÂN");
+            ColorPrintUtil.printMenuItem(1, "Cập nhật thông tin cá nhân");
+            ColorPrintUtil.printMenuItem(2, "Đổi mật khẩu");
+            ColorPrintUtil.printMenuItem(3, "Quản lý công nghệ");
+            ColorPrintUtil.printMenuItem(4, "Quay về menu chính");
+            ColorPrintUtil.printInputField("Nhập lựa chọn");
 
-            int choice = Integer.parseInt(scanner.nextLine());
+            int choice;
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                ColorPrintUtil.printError("Vui lòng nhập một số!");
+                continue;
+            }
 
             switch (choice) {
                 case 1:
@@ -57,18 +65,18 @@ public class MenuInfor {
                 case 4:
                     return;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
             }
         }
     }
 
     private void updatePersonalInfo() {
-        System.out.println("\n=== CẬP NHẬT THÔNG TIN CÁ NHÂN ===");
+        ColorPrintUtil.printHeader("CẬP NHẬT THÔNG TIN CÁ NHÂN");
 
         // Lấy thông tin hiện tại của ứng viên
         Candidate candidate = candidateService.getCandidateById(currentCandidate.getId());
         if (candidate == null) {
-            System.out.println("Không tìm thấy thông tin ứng viên!");
+            ColorPrintUtil.printError("Không tìm thấy thông tin ứng viên!");
             return;
         }
 
@@ -77,22 +85,22 @@ public class MenuInfor {
 
         // Hiển thị menu lựa chọn thông tin cần cập nhật
         while (true) {
-            System.out.println("\nChọn thông tin bạn muốn cập nhật:");
-            System.out.println("1. Họ tên");
-            System.out.println("2. Số điện thoại");
-            System.out.println("3. Số năm kinh nghiệm");
-            System.out.println("4. Giới tính");
-            System.out.println("5. Mô tả bản thân");
-            System.out.println("6. Ngày sinh");
-            System.out.println("7. Cập nhật tất cả thông tin");
-            System.out.println("0. Quay lại");
-            System.out.print("Nhập lựa chọn của bạn: ");
+            ColorPrintUtil.printSubHeader("Chọn thông tin bạn muốn cập nhật");
+            ColorPrintUtil.printMenuItem(1, "Họ tên");
+            ColorPrintUtil.printMenuItem(2, "Số điện thoại");
+            ColorPrintUtil.printMenuItem(3, "Số năm kinh nghiệm");
+            ColorPrintUtil.printMenuItem(4, "Giới tính");
+            ColorPrintUtil.printMenuItem(5, "Mô tả bản thân");
+            ColorPrintUtil.printMenuItem(6, "Ngày sinh");
+            ColorPrintUtil.printMenuItem(7, "Cập nhật tất cả thông tin");
+            ColorPrintUtil.printMenuItem(0, "Quay lại");
+            ColorPrintUtil.printInputField("Nhập lựa chọn của bạn");
 
             int choice;
             try {
                 choice = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.err.println("Vui lòng nhập một số!");
+                ColorPrintUtil.printError("Vui lòng nhập một số!");
                 continue;
             }
 
@@ -121,7 +129,7 @@ public class MenuInfor {
                     updateAllInfo(candidate);
                     break;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
                     break;
             }
 
@@ -129,14 +137,14 @@ public class MenuInfor {
             if (choice >= 1 && choice <= 7) {
                 boolean success = candidateService.updateCandidateInfo(candidate);
                 if (success) {
-                    System.out.println("Cập nhật thông tin thành công!");
+                    ColorPrintUtil.printOperationSuccess("Cập nhật thông tin thành công!");
                     // Cập nhật lại thông tin trong currentCandidate
                     currentCandidate = candidate;
                     // Hiển thị thông tin đã cập nhật
-                    System.out.println("\n=== THÔNG TIN SAU KHI CẬP NHẬT ===");
+                    ColorPrintUtil.printSubHeader("THÔNG TIN SAU KHI CẬP NHẬT");
                     displayCurrentInfo(candidate);
                 } else {
-                    System.out.println("Cập nhật thông tin thất bại!");
+                    ColorPrintUtil.printOperationFailed("Cập nhật thông tin thất bại!");
                 }
             }
         }
@@ -144,75 +152,132 @@ public class MenuInfor {
 
     // Phương thức hiển thị thông tin hiện tại của ứng viên
     private void displayCurrentInfo(Candidate candidate) {
-        System.out.println("\n=== THÔNG TIN HIỆN TẠI ===");
-        System.out.println("Họ tên: " + candidate.getName());
-        System.out.println("Email: " + candidate.getEmail());
-        System.out.println("Số điện thoại: " + candidate.getPhone());
-        System.out.println("Số năm kinh nghiệm: " + candidate.getExperience());
-        System.out.println("Giới tính: " + candidate.getGender());
-        System.out.println("Mô tả bản thân: " + candidate.getDescription());
-        System.out.println("Ngày sinh: " + candidate.getDob());
-        System.out.println("Trạng thái: " + candidate.getStatus());
+        ColorPrintUtil.printSubHeader("THÔNG TIN HIỆN TẠI");
+        ColorPrintUtil.printResultLabel("Họ tên");
+        System.out.println(PrintColor.WHITE_BOLD + candidate.getName() + PrintColor.RESET);
+
+        ColorPrintUtil.printResultLabel("Email");
+        System.out.println(PrintColor.WHITE_BOLD + candidate.getEmail() + PrintColor.RESET);
+
+        ColorPrintUtil.printResultLabel("Số điện thoại");
+        System.out.println(PrintColor.WHITE_BOLD + candidate.getPhone() + PrintColor.RESET);
+
+        ColorPrintUtil.printResultLabel("Số năm kinh nghiệm");
+        System.out.println(PrintColor.WHITE_BOLD + candidate.getExperience() + PrintColor.RESET);
+
+        ColorPrintUtil.printResultLabel("Giới tính");
+        System.out.println(PrintColor.WHITE_BOLD + candidate.getGender() + PrintColor.RESET);
+
+        ColorPrintUtil.printResultLabel("Mô tả bản thân");
+        System.out.println(PrintColor.WHITE_BOLD + candidate.getDescription() + PrintColor.RESET);
+
+        ColorPrintUtil.printResultLabel("Ngày sinh");
+        System.out.println(PrintColor.WHITE_BOLD + candidate.getDob() + PrintColor.RESET);
+
+        ColorPrintUtil.printResultLabel("Trạng thái");
+        ColorPrintUtil.printStatus(candidate.getStatus());
+        System.out.println();
     }
 
     private void updateName(Candidate candidate) {
-        String name = InputMethod.inputString(scanner, "Nhập họ tên (" + candidate.getName() + "): ", "Họ tên không được để trống");
+        String currentName = candidate.getName();
+        ColorPrintUtil.printInputField("Nhập họ tên (" + currentName + ")");
+        String name = scanner.nextLine();
+        if (name.trim().isEmpty()) {
+            ColorPrintUtil.printError("Họ tên không được để trống");
+            return;
+        }
         candidate.setName(name);
+        ColorPrintUtil.printSuccess("Đã cập nhật họ tên thành công");
     }
 
     private void updatePhone(Candidate candidate) {
         while (true) {
-            String phone = InputMethod.inputString(scanner, "Nhập số điện thoại (" + candidate.getPhone() + "): ", "Số điện thoại không được để trống");
+            ColorPrintUtil.printInputField("Nhập số điện thoại (" + candidate.getPhone() + ")");
+            String phone = scanner.nextLine();
+            if (phone.trim().isEmpty()) {
+                ColorPrintUtil.printError("Số điện thoại không được để trống");
+                continue;
+            }
+
             if (validateCandidate.isValidPhone(phone)) {
                 candidate.setPhone(phone);
+                ColorPrintUtil.printSuccess("Đã cập nhật số điện thoại thành công");
                 break;
             }
-            System.err.println("Số điện thoại không hợp lệ! Số điện thoại phải có 10-11 chữ số.");
+            ColorPrintUtil.printError("Số điện thoại không hợp lệ! Số điện thoại phải có 10-11 chữ số.");
         }
     }
 
     private void updateExperience(Candidate candidate) {
-        System.out.println("Nhập số năm kinh nghiệm (" + candidate.getExperience() + "): ");
+        ColorPrintUtil.printInputField("Nhập số năm kinh nghiệm (" + candidate.getExperience() + ")");
         while (true) {
             try {
-                int experience = InputMethod.inputInt(scanner, "Số năm kinh nghiệm phải là số nguyên không âm!");
+                String input = scanner.nextLine();
+                if (input.trim().isEmpty()) {
+                    ColorPrintUtil.printError("Số năm kinh nghiệm không được để trống");
+                    continue;
+                }
+
+                int experience = Integer.parseInt(input);
                 if (validateCandidate.isValidExperience(experience)) {
                     candidate.setExperience(experience);
+                    ColorPrintUtil.printSuccess("Đã cập nhật số năm kinh nghiệm thành công");
                     break;
                 }
-                System.err.println("Số năm kinh nghiệm không được âm!");
+                ColorPrintUtil.printError("Số năm kinh nghiệm không được âm!");
             } catch (NumberFormatException e) {
-                System.err.println("Vui lòng nhập một số hợp lệ!");
+                ColorPrintUtil.printError("Vui lòng nhập một số hợp lệ!");
             }
         }
     }
 
     private void updateGender(Candidate candidate) {
         while (true) {
-            String gender = InputMethod.inputString(scanner, "Nhập giới tính (Nam/Nữ) (" + candidate.getGender() + "): ", "Giới tính không được để trống");
+            ColorPrintUtil.printInputField("Nhập giới tính (Nam/Nữ) (" + candidate.getGender() + ")");
+            String gender = scanner.nextLine();
+            if (gender.trim().isEmpty()) {
+                ColorPrintUtil.printError("Giới tính không được để trống");
+                continue;
+            }
+
             if (validateCandidate.isValidGender(gender)) {
                 candidate.setGender(gender);
+                ColorPrintUtil.printSuccess("Đã cập nhật giới tính thành công");
                 break;
             }
-            System.err.println("Giới tính không hợp lệ! Chỉ chấp nhận 'Nam' hoặc 'Nữ'.");
+            ColorPrintUtil.printError("Giới tính không hợp lệ! Chỉ chấp nhận 'Nam' hoặc 'Nữ'.");
         }
     }
 
     private void updateDescription(Candidate candidate) {
-        String description = InputMethod.inputString(scanner, "Nhập mô tả bản thân (" + candidate.getDescription() + "): ", "Mô tả không được để trống");
+        ColorPrintUtil.printInputField("Nhập mô tả bản thân (" + candidate.getDescription() + ")");
+        String description = scanner.nextLine();
+        if (description.trim().isEmpty()) {
+            ColorPrintUtil.printError("Mô tả không được để trống");
+            return;
+        }
         candidate.setDescription(description);
+        ColorPrintUtil.printSuccess("Đã cập nhật mô tả bản thân thành công");
     }
 
     private void updateDateOfBirth(Candidate candidate) {
         while (true) {
-            String dobStr = InputMethod.inputString(scanner, "Nhập ngày sinh (YYYY-MM-DD) (" + candidate.getDob() + "): ", "Ngày sinh không được để trống");
+            ColorPrintUtil.printInputField("Nhập ngày sinh (YYYY-MM-DD) (" + candidate.getDob() + ")");
+            String dobStr = scanner.nextLine();
+            if (dobStr.trim().isEmpty()) {
+                ColorPrintUtil.printError("Ngày sinh không được để trống");
+                continue;
+            }
+
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
                 java.util.Date utilDate = sdf.parse(dobStr);
                 candidate.setDob(new Date(utilDate.getTime()));
+                ColorPrintUtil.printSuccess("Đã cập nhật ngày sinh thành công");
                 break;
             } catch (ParseException e) {
-                System.err.println("Định dạng ngày không hợp lệ! Sử dụng định dạng YYYY-MM-DD.");
+                ColorPrintUtil.printError("Định dạng ngày không hợp lệ! Sử dụng định dạng YYYY-MM-DD.");
             }
         }
     }
@@ -224,21 +289,27 @@ public class MenuInfor {
         updateGender(candidate);
         updateDescription(candidate);
         updateDateOfBirth(candidate);
+        ColorPrintUtil.printSuccess("Đã cập nhật tất cả thông tin thành công");
     }
 
     private void changePassword() {
-        System.out.println("\n=== ĐỔI MẬT KHẨU ===");
+        ColorPrintUtil.printHeader("ĐỔI MẬT KHẨU");
 
         // Nhập định danh (email hoặc số điện thoại) để xác thực
         String identifier;
         while (true) {
-            identifier = InputMethod.inputString(scanner, "Nhập email hoặc số điện thoại để xác thực: ", "Email/Số điện thoại không được để trống");
+            ColorPrintUtil.printInputField("Nhập email hoặc số điện thoại để xác thực");
+            identifier = scanner.nextLine();
+            if (identifier.trim().isEmpty()) {
+                ColorPrintUtil.printError("Email/Số điện thoại không được để trống");
+                continue;
+            }
 
             // Kiểm tra xem định danh có phải của tài khoản đang đăng nhập không
             boolean isCurrentUser = (identifier.equals(currentCandidate.getEmail()) || identifier.equals(currentCandidate.getPhone()));
 
             if (!isCurrentUser) {
-                System.err.println("Bạn chỉ có thể đổi mật khẩu cho tài khoản của chính mình!");
+                ColorPrintUtil.printError("Bạn chỉ có thể đổi mật khẩu cho tài khoản của chính mình!");
                 continue;
             }
 
@@ -247,9 +318,9 @@ public class MenuInfor {
                 if (validateCandidate.isExistingEmailOrPhone(identifier)) {
                     break;
                 }
-                System.err.println("Email/Số điện thoại không tồn tại trong hệ thống!");
+                ColorPrintUtil.printError("Email/Số điện thoại không tồn tại trong hệ thống!");
             } else {
-                System.err.println("Email/Số điện thoại không hợp lệ!");
+                ColorPrintUtil.printError("Email/Số điện thoại không hợp lệ!");
             }
         }
 
@@ -260,7 +331,12 @@ public class MenuInfor {
         final int MAX_ATTEMPTS = 3;
 
         while (attempts < MAX_ATTEMPTS && !isOldPasswordCorrect) {
-            oldPassword = InputMethod.inputString(scanner, "Nhập mật khẩu cũ: ", "Mật khẩu không được để trống");
+            ColorPrintUtil.printInputField("Nhập mật khẩu cũ");
+            oldPassword = scanner.nextLine();
+            if (oldPassword.trim().isEmpty()) {
+                ColorPrintUtil.printError("Mật khẩu không được để trống");
+                continue;
+            }
 
             // Kiểm tra mật khẩu cũ có đúng không
             if (candidateService.verifyPassword(identifier, oldPassword)) {
@@ -271,37 +347,47 @@ public class MenuInfor {
                 boolean isValidNewPassword = false;
 
                 while (!isValidNewPassword) {
-                    newPassword = InputMethod.inputString(scanner, "Nhập mật khẩu mới: ", "Mật khẩu không được để trống");
+                    ColorPrintUtil.printInputField("Nhập mật khẩu mới");
+                    newPassword = scanner.nextLine();
+                    if (newPassword.trim().isEmpty()) {
+                        ColorPrintUtil.printError("Mật khẩu không được để trống");
+                        continue;
+                    }
 
                     // Kiểm tra tính hợp lệ của mật khẩu mới
                     if (validateCandidate.isValidPassword(newPassword)) {
                         // Xác nhận mật khẩu mới
-                        String confirmPassword = InputMethod.inputString(scanner, "Xác nhận mật khẩu mới: ", "Xác nhận mật khẩu không được để trống");
+                        ColorPrintUtil.printInputField("Xác nhận mật khẩu mới");
+                        String confirmPassword = scanner.nextLine();
+                        if (confirmPassword.trim().isEmpty()) {
+                            ColorPrintUtil.printError("Xác nhận mật khẩu không được để trống");
+                            continue;
+                        }
 
                         if (newPassword.equals(confirmPassword)) {
                             // Thực hiện đổi mật khẩu
                             boolean success = candidateService.changePassword(identifier, oldPassword, newPassword);
 
                             if (success) {
-                                System.out.println("Đổi mật khẩu thành công!");
+                                ColorPrintUtil.printOperationSuccess("Đổi mật khẩu thành công!");
                                 return;
                             } else {
-                                System.err.println("Đổi mật khẩu thất bại! Vui lòng thử lại sau.");
+                                ColorPrintUtil.printOperationFailed("Đổi mật khẩu thất bại! Vui lòng thử lại sau.");
                                 return;
                             }
                         } else {
-                            System.err.println("Mật khẩu xác nhận không khớp với mật khẩu mới!");
+                            ColorPrintUtil.printError("Mật khẩu xác nhận không khớp với mật khẩu mới!");
                         }
                     } else {
-                        System.err.println("Mật khẩu không hợp lệ! Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số.");
+                        ColorPrintUtil.printError("Mật khẩu không hợp lệ! Mật khẩu phải có ít nhất 6 ký tự, bao gồm chữ hoa, chữ thường và số.");
                     }
                 }
             } else {
                 attempts++;
-                System.err.println("Mật khẩu cũ không đúng! Còn " + (MAX_ATTEMPTS - attempts) + " lần thử.");
+                ColorPrintUtil.printWarning("Mật khẩu cũ không đúng! Còn " + (MAX_ATTEMPTS - attempts) + " lần thử.");
 
                 if (attempts >= MAX_ATTEMPTS) {
-                    System.err.println("Bạn đã nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.");
+                    ColorPrintUtil.printError("Bạn đã nhập sai mật khẩu quá nhiều lần. Vui lòng thử lại sau.");
                     return;
                 }
             }
@@ -310,18 +396,18 @@ public class MenuInfor {
 
     private void manageTechnologies() {
         while (true) {
-            System.out.println("\n=== QUẢN LÝ CÔNG NGHỆ ===");
-            System.out.println("1. Xem danh sách công nghệ đã đăng ký");
-            System.out.println("2. Thêm công nghệ mới");
-            System.out.println("3. Xóa công nghệ");
-            System.out.println("0. Quay lại");
-            System.out.print("Nhập lựa chọn: ");
+            ColorPrintUtil.printHeader("QUẢN LÝ CÔNG NGHỆ");
+            ColorPrintUtil.printMenuItem(1, "Xem danh sách công nghệ đã đăng ký");
+            ColorPrintUtil.printMenuItem(2, "Thêm công nghệ mới");
+            ColorPrintUtil.printMenuItem(3, "Xóa công nghệ");
+            ColorPrintUtil.printMenuItem(0, "Quay lại");
+            ColorPrintUtil.printInputField("Nhập lựa chọn");
 
             int choice;
             try {
                 choice = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.err.println("Vui lòng nhập một số!");
+                ColorPrintUtil.printError("Vui lòng nhập một số!");
                 continue;
             }
 
@@ -338,31 +424,32 @@ public class MenuInfor {
                     removeTechnology();
                     break;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
                     break;
             }
         }
     }
 
     private void viewRegisteredTechnologies() {
-        System.out.println("\n=== DANH SÁCH CÔNG NGHỆ ĐÃ ĐĂNG KÝ ===");
+        ColorPrintUtil.printHeader("DANH SÁCH CÔNG NGHỆ ĐÃ ĐĂNG KÝ");
         List<Technology> technologies = candidateTechnologyService.getCandidateTechnologies(currentCandidate.getId());
 
         if (technologies.isEmpty()) {
-            System.out.println("Bạn chưa đăng ký công nghệ nào!");
+            ColorPrintUtil.printInfo("Bạn chưa đăng ký công nghệ nào!");
         } else {
-            System.out.println("Số lượng: " + technologies.size());
-            System.out.println("ID\tTên công nghệ");
-            System.out.println("--------------------");
+            ColorPrintUtil.printInfo("Số lượng: " + technologies.size());
+            ColorPrintUtil.printTableHeader("ID\tTên công nghệ");
+            ColorPrintUtil.printDivider();
 
             for (Technology tech : technologies) {
-                System.out.println(tech.getId() + "\t" + tech.getName());
+                System.out.println(PrintColor.CYAN_BRIGHT + tech.getId() + "\t" +
+                        PrintColor.WHITE_BOLD + tech.getName() + PrintColor.RESET);
             }
         }
     }
 
     private void addTechnology() {
-        System.out.println("\n=== THÊM CÔNG NGHỆ ===");
+        ColorPrintUtil.printHeader("THÊM CÔNG NGHỆ");
 
         // Lấy danh sách tất cả công nghệ trong hệ thống
         List<Technology> allTechnologies = technologyService.getAllTechnologies();
@@ -371,15 +458,15 @@ public class MenuInfor {
         List<Technology> registeredTechnologies = candidateTechnologyService.getCandidateTechnologies(currentCandidate.getId());
 
         if (allTechnologies.isEmpty()) {
-            System.out.println("Không có công nghệ nào trong hệ thống!");
+            ColorPrintUtil.printInfo("Không có công nghệ nào trong hệ thống!");
             return;
         }
 
         // Hiển thị danh sách tất cả công nghệ và đánh dấu những công nghệ đã đăng ký
-        System.out.println("Danh sách tất cả công nghệ:");
-        System.out.println("ID\tTên công nghệ\tĐã đăng ký");
-        System.out.println("--------------------------------");
-        System.out.println("(Những công nghệ có dấu X là công nghệ bạn đã đăng ký, không thể thêm lại)");
+        ColorPrintUtil.printInfo("Danh sách tất cả công nghệ:");
+        ColorPrintUtil.printTableHeader("ID\tTên công nghệ\tĐã đăng ký");
+        ColorPrintUtil.printDivider();
+        ColorPrintUtil.printInfo("(Những công nghệ có dấu X là công nghệ bạn đã đăng ký, không thể thêm lại)");
 
         for (Technology tech : allTechnologies) {
             boolean isRegistered = false;
@@ -389,14 +476,22 @@ public class MenuInfor {
                     break;
                 }
             }
-            System.out.println(tech.getId() + "\t" + tech.getName() + "\t\t" + (isRegistered ? "X" : ""));
+            System.out.print(PrintColor.CYAN_BRIGHT + tech.getId() + "\t" +
+                    PrintColor.WHITE_BOLD + tech.getName() + "\t\t");
+
+            if (isRegistered) {
+                System.out.println(PrintColor.RED_BOLD + "X" + PrintColor.RESET);
+            } else {
+                System.out.println(PrintColor.RESET);
+            }
         }
 
         // Chọn công nghệ để thêm
-        System.out.println("\nLƯU Ý: Vui lòng nhập ID của công nghệ (cột đầu tiên) mà bạn muốn thêm");
-        System.out.println("Bạn chỉ có thể thêm những công nghệ chưa có dấu X.");
+        ColorPrintUtil.printHighlight("\nLƯU Ý: Vui lòng nhập ID của công nghệ (cột đầu tiên) mà bạn muốn thêm");
+        ColorPrintUtil.printInfo("Bạn chỉ có thể thêm những công nghệ chưa có dấu X.");
         try {
-            int techId = InputMethod.inputInt(scanner, "Nhập ID công nghệ muốn thêm (0 để hủy): ");
+            ColorPrintUtil.printInputField("Nhập ID công nghệ muốn thêm (0 để hủy)");
+            int techId = Integer.parseInt(scanner.nextLine());
 
             if (techId == 0) {
                 return;
@@ -405,50 +500,51 @@ public class MenuInfor {
             // Kiểm tra xem công nghệ có tồn tại không
             Technology selectedTech = technologyService.getTechnologyById(techId);
             if (selectedTech == null) {
-                System.err.println("Công nghệ không tồn tại!");
+                ColorPrintUtil.printError("Công nghệ không tồn tại!");
                 return;
             }
 
             // Kiểm tra xem đã đăng ký công nghệ này chưa
             if (candidateTechnologyService.hasTechnology(currentCandidate.getId(), techId)) {
-                System.err.println("Bạn đã đăng ký công nghệ này rồi!");
+                ColorPrintUtil.printError("Bạn đã đăng ký công nghệ này rồi!");
                 return;
             }
 
             // Thêm công nghệ cho ứng viên
             boolean success = candidateTechnologyService.addTechnologyToCandidate(currentCandidate.getId(), techId);
             if (success) {
-                System.out.println("Thêm công nghệ " + selectedTech.getName() + " thành công!");
+                ColorPrintUtil.printOperationSuccess("Thêm công nghệ " + selectedTech.getName() + " thành công!");
             } else {
-                System.err.println("Thêm công nghệ thất bại!");
+                ColorPrintUtil.printOperationFailed("Thêm công nghệ thất bại!");
             }
         } catch (NumberFormatException e) {
-            System.err.println("ID công nghệ phải là số nguyên!");
+            ColorPrintUtil.printError("ID công nghệ phải là số nguyên!");
         }
     }
 
     private void removeTechnology() {
-        System.out.println("\n=== XÓA CÔNG NGHỆ ===");
+        ColorPrintUtil.printHeader("XÓA CÔNG NGHỆ");
 
         // Hiển thị danh sách công nghệ đã đăng ký
         List<Technology> registeredTechnologies = candidateTechnologyService.getCandidateTechnologies(currentCandidate.getId());
 
         if (registeredTechnologies.isEmpty()) {
-            System.out.println("Bạn chưa đăng ký công nghệ nào!");
+            ColorPrintUtil.printInfo("Bạn chưa đăng ký công nghệ nào!");
             return;
         }
 
-        System.out.println("Danh sách công nghệ đã đăng ký:");
-        System.out.println("ID\tTên công nghệ");
-        System.out.println("--------------------");
+        ColorPrintUtil.printInfo("Danh sách công nghệ đã đăng ký:");
+        ColorPrintUtil.printTableHeader("ID\tTên công nghệ");
+        ColorPrintUtil.printDivider();
 
         for (Technology tech : registeredTechnologies) {
-            System.out.println(tech.getId() + "\t" + tech.getName());
+            System.out.println(PrintColor.CYAN_BRIGHT + tech.getId() + "\t" +
+                    PrintColor.WHITE_BOLD + tech.getName() + PrintColor.RESET);
         }
 
-        System.out.println("Nhập ID công nghệ muốn xóa");
         try {
-            int techId = InputMethod.inputInt(scanner, "Nhập ID công nghệ muốn xóa (0 để hủy): ");
+            ColorPrintUtil.printInputField("Nhập ID công nghệ muốn xóa (0 để hủy)");
+            int techId = Integer.parseInt(scanner.nextLine());
 
             if (techId == 0) {
                 return;
@@ -467,24 +563,24 @@ public class MenuInfor {
             }
 
             if (!hasRegistered) {
-                System.err.println("Bạn chưa đăng ký công nghệ này hoặc công nghệ không tồn tại!");
+                ColorPrintUtil.printError("Bạn chưa đăng ký công nghệ này hoặc công nghệ không tồn tại!");
                 return;
             }
 
             // Xác nhận xóa
-            System.out.println("Bạn có chắc chắn muốn xóa công nghệ " + techName + "? (Y/N)");
+            ColorPrintUtil.printWarning("Bạn có chắc chắn muốn xóa công nghệ " + techName + "? (Y/N)");
             String confirm = scanner.nextLine();
 
             if (confirm.equalsIgnoreCase("Y")) {
                 boolean success = candidateTechnologyService.removeTechnologyFromCandidate(currentCandidate.getId(), techId);
                 if (success) {
-                    System.out.println("Xóa công nghệ " + techName + " thành công!");
+                    ColorPrintUtil.printOperationSuccess("Xóa công nghệ " + techName + " thành công!");
                 } else {
-                    System.err.println("Xóa công nghệ thất bại!");
+                    ColorPrintUtil.printOperationFailed("Xóa công nghệ thất bại!");
                 }
             }
         } catch (NumberFormatException e) {
-            System.err.println("ID công nghệ phải là số nguyên!");
+            ColorPrintUtil.printError("ID công nghệ phải là số nguyên!");
         }
     }
 }

@@ -13,12 +13,9 @@ public class CandidateServiceImpl implements ICandidateService {
 
     @Override
     public boolean changePassword(String identifier, String oldPassword, String newPassword) {
-        // Determine if identifier is email or phone
         if (identifier.contains("@")) {
-            // It's an email
             return candidateInforDao.changePasswordByEmail(identifier, oldPassword, newPassword);
         } else {
-            // It's a phone number
             return candidateInforDao.changePasswordByPhone(identifier, oldPassword, newPassword);
         }
     }
@@ -47,14 +44,11 @@ public class CandidateServiceImpl implements ICandidateService {
     public boolean verifyPassword(String identifier, String password) {
         Candidate candidate;
         if (identifier.contains("@")) {
-            // It's an email
             candidate = getCandidateByEmail(identifier);
         } else {
-            // It's a phone number
             candidate = getCandidateByPhone(identifier);
         }
 
-        // Kiểm tra mật khẩu có khớp không
         if (candidate != null) {
             return candidate.getPassword().equals(password);
         }

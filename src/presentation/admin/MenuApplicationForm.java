@@ -1,6 +1,8 @@
 package presentation.admin;
 
 import business.service.admin.ApplicationFormService;
+import config.ColorPrintUtil;
+import config.PrintColor;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -16,22 +18,22 @@ public class MenuApplicationForm {
 
     public void showMenu() {
         while (true) {
-            System.out.println("\n=== QUẢN LÝ ĐƠN ỨNG TUYỂN ===");
-            System.out.println("1. Xem danh sách đơn ứng tuyển");
-            System.out.println("2. Lọc đơn theo trạng thái (progress)");
-            System.out.println("3. Lọc đơn theo kết quả (result)");
-            System.out.println("4. Hủy đơn");
-            System.out.println("5. Xem chi tiết đơn");
-            System.out.println("6. Gửi thông tin phỏng vấn");
-            System.out.println("7. Cập nhật kết quả phỏng vấn");
-            System.out.println("8. Quay về menu chính");
-            System.out.print("Nhập lựa chọn: ");
+            ColorPrintUtil.printHeader("QUẢN LÝ ĐƠN ỨNG TUYỂN");
+            System.out.println(PrintColor.CYAN + "1. " + PrintColor.WHITE + "Xem danh sách đơn ứng tuyển" + PrintColor.RESET);
+            System.out.println(PrintColor.CYAN + "2. " + PrintColor.WHITE + "Lọc đơn theo trạng thái (progress)" + PrintColor.RESET);
+            System.out.println(PrintColor.CYAN + "3. " + PrintColor.WHITE + "Lọc đơn theo kết quả (result)" + PrintColor.RESET);
+            System.out.println(PrintColor.CYAN + "4. " + PrintColor.WHITE + "Hủy đơn" + PrintColor.RESET);
+            System.out.println(PrintColor.CYAN + "5. " + PrintColor.WHITE + "Xem chi tiết đơn" + PrintColor.RESET);
+            System.out.println(PrintColor.CYAN + "6. " + PrintColor.WHITE + "Gửi thông tin phỏng vấn" + PrintColor.RESET);
+            System.out.println(PrintColor.CYAN + "7. " + PrintColor.WHITE + "Cập nhật kết quả phỏng vấn" + PrintColor.RESET);
+            System.out.println(PrintColor.CYAN + "8. " + PrintColor.WHITE + "Quay về menu chính" + PrintColor.RESET);
+            ColorPrintUtil.printPrompt("Nhập lựa chọn: ");
 
             int choice;
             try {
                 choice = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Lựa chọn không hợp lệ! Vui lòng nhập lại.");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ! Vui lòng nhập lại.");
                 continue;
             }
 
@@ -60,17 +62,17 @@ public class MenuApplicationForm {
                 case 8:
                     return;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
             }
         }
     }
 
     private void viewApplicationForms() {
-        System.out.println("\n=== DANH SÁCH ĐƠN ỨNG TUYỂN ===");
+        ColorPrintUtil.printHeader("DANH SÁCH ĐƠN ỨNG TUYỂN");
         List<Object> applications = applicationService.getAllApplications();
 
         if (applications.isEmpty()) {
-            System.out.println("Không có đơn ứng tuyển nào!");
+            ColorPrintUtil.printWarning("Không có đơn ứng tuyển nào!");
             return;
         }
 
@@ -78,27 +80,27 @@ public class MenuApplicationForm {
     }
 
     private void filterByProgress() {
-        System.out.println("\n=== LỌC THEO TRẠNG THÁI ===");
+        ColorPrintUtil.printHeader("LỌC THEO TRẠNG THÁI");
         System.out.println("Các trạng thái:");
-        System.out.println("1. Pending - Chờ xử lý");
-        System.out.println("2. Handling - Đang xử lý");
-        System.out.println("3. Interviewing - Đang phỏng vấn");
-        System.out.println("4. Done - Hoàn thành");
+        System.out.println(PrintColor.YELLOW + "1. Pending " + PrintColor.WHITE + "- Chờ xử lý" + PrintColor.RESET);
+        System.out.println(PrintColor.BLUE + "2. Handling " + PrintColor.WHITE + "- Đang xử lý" + PrintColor.RESET);
+        System.out.println(PrintColor.PURPLE + "3. Interviewing " + PrintColor.WHITE + "- Đang phỏng vấn" + PrintColor.RESET);
+        System.out.println(PrintColor.GREEN + "4. Done " + PrintColor.WHITE + "- Hoàn thành" + PrintColor.RESET);
 
         int choice = -1;
         boolean validInput = false;
 
         while (!validInput) {
-            System.out.print("Chọn trạng thái (1-4): ");
+            ColorPrintUtil.printPrompt("Chọn trạng thái (1-4): ");
             try {
                 choice = Integer.parseInt(scanner.nextLine());
                 if (choice >= 1 && choice <= 4) {
                     validInput = true;
                 } else {
-                    System.out.println("Lựa chọn phải từ 1-4. Vui lòng nhập lại!");
+                    ColorPrintUtil.printError("Lựa chọn phải từ 1-4. Vui lòng nhập lại!");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Lựa chọn không hợp lệ! Vui lòng nhập số từ 1-4.");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ! Vui lòng nhập số từ 1-4.");
             }
         }
 
@@ -109,14 +111,14 @@ public class MenuApplicationForm {
             case 3: progress = "interviewing"; break;
             case 4: progress = "done"; break;
             default:
-                System.out.println("Lựa chọn không hợp lệ!");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
                 return;
         }
 
         List<Map<String, Object>> applications = applicationService.filterByProgress(progress);
 
         if (applications.isEmpty()) {
-            System.out.println("Không tìm thấy đơn ứng tuyển nào với trạng thái: " + progress);
+            ColorPrintUtil.printWarning("Không tìm thấy đơn ứng tuyển nào với trạng thái: " + progress);
             return;
         }
 
@@ -124,25 +126,25 @@ public class MenuApplicationForm {
     }
 
     private void filterByResult() {
-        System.out.println("\n=== LỌC THEO KẾT QUẢ ===");
+        ColorPrintUtil.printHeader("LỌC THEO KẾT QUẢ");
         System.out.println("Các kết quả:");
-        System.out.println("1. Pass - Đậu");
-        System.out.println("2. Fail - Trượt");
+        System.out.println(PrintColor.GREEN + "1. Pass " + PrintColor.WHITE + "- Đậu" + PrintColor.RESET);
+        System.out.println(PrintColor.RED + "2. Fail " + PrintColor.WHITE + "- Trượt" + PrintColor.RESET);
 
         int choice = -1;
         boolean validInput = false;
 
         while (!validInput) {
-            System.out.print("Chọn kết quả (1-2): ");
+            ColorPrintUtil.printPrompt("Chọn kết quả (1-2): ");
             try {
                 choice = Integer.parseInt(scanner.nextLine());
                 if (choice >= 1 && choice <= 2) {
                     validInput = true;
                 } else {
-                    System.out.println("Lựa chọn phải từ 1-2. Vui lòng nhập lại!");
+                    ColorPrintUtil.printError("Lựa chọn phải từ 1-2. Vui lòng nhập lại!");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Lựa chọn không hợp lệ! Vui lòng nhập số từ 1-2.");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ! Vui lòng nhập số từ 1-2.");
             }
         }
 
@@ -151,14 +153,14 @@ public class MenuApplicationForm {
             case 1: result = "Pass"; break;
             case 2: result = "Fail"; break;
             default:
-                System.out.println("Lựa chọn không hợp lệ!");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
                 return;
         }
 
         List<Map<String, Object>> applications = applicationService.filterByResult(result);
 
         if (applications.isEmpty()) {
-            System.out.println("Không tìm thấy đơn ứng tuyển nào với kết quả: " + result);
+            ColorPrintUtil.printWarning("Không tìm thấy đơn ứng tuyển nào với kết quả: " + result);
             return;
         }
 
@@ -166,25 +168,25 @@ public class MenuApplicationForm {
     }
 
     private void cancelApplication() {
-        System.out.println("\n=== HỦY ĐƠN ỨNG TUYỂN ===");
+        ColorPrintUtil.printHeader("HỦY ĐƠN ỨNG TUYỂN");
 
         int id = -1;
         boolean validId = false;
 
         while (!validId) {
-            System.out.print("Nhập ID đơn cần hủy: ");
+            ColorPrintUtil.printPrompt("Nhập ID đơn cần hủy: ");
             try {
                 id = Integer.parseInt(scanner.nextLine());
                 validId = true;
             } catch (NumberFormatException e) {
-                System.out.println("ID không hợp lệ! Vui lòng nhập số.");
+                ColorPrintUtil.printError("ID không hợp lệ! Vui lòng nhập số.");
             }
         }
 
         // Kiểm tra đơn tồn tại
         Map<String, Object> app = (Map<String, Object>) applicationService.viewApplicationDetail(id);
         if (app.isEmpty()) {
-            System.out.println("Không tìm thấy đơn ứng tuyển với ID: " + id);
+            ColorPrintUtil.printError("Không tìm thấy đơn ứng tuyển với ID: " + id);
             return;
         }
 
@@ -192,11 +194,11 @@ public class MenuApplicationForm {
         boolean validReason = false;
 
         while (!validReason) {
-            System.out.print("Nhập lý do hủy: ");
+            ColorPrintUtil.printPrompt("Nhập lý do hủy: ");
             reason = scanner.nextLine();
 
             if (reason.trim().isEmpty()) {
-                System.out.println("Lý do hủy không được để trống! Vui lòng nhập lại.");
+                ColorPrintUtil.printError("Lý do hủy không được để trống! Vui lòng nhập lại.");
             } else {
                 validReason = true;
             }
@@ -205,25 +207,25 @@ public class MenuApplicationForm {
         boolean success = applicationService.cancelApplication(id, reason);
 
         if (success) {
-            System.out.println("Đã hủy đơn ứng tuyển thành công!");
+            ColorPrintUtil.printSuccess("Đã hủy đơn ứng tuyển thành công!");
         } else {
-            System.out.println("Hủy đơn ứng tuyển thất bại!");
+            ColorPrintUtil.printError("Hủy đơn ứng tuyển thất bại!");
         }
     }
 
     private void viewApplicationDetail() {
-        System.out.println("\n=== XEM CHI TIẾT ĐƠN ỨNG TUYỂN ===");
+        ColorPrintUtil.printHeader("XEM CHI TIẾT ĐƠN ỨNG TUYỂN");
 
         int id = -1;
         boolean validId = false;
 
         while (!validId) {
-            System.out.print("Nhập ID đơn: ");
+            ColorPrintUtil.printPrompt("Nhập ID đơn: ");
             try {
                 id = Integer.parseInt(scanner.nextLine());
                 validId = true;
             } catch (NumberFormatException e) {
-                System.out.println("ID không hợp lệ! Vui lòng nhập số.");
+                ColorPrintUtil.printError("ID không hợp lệ! Vui lòng nhập số.");
             }
         }
 
@@ -232,32 +234,32 @@ public class MenuApplicationForm {
     }
 
     private void sendInterviewInfo() {
-        System.out.println("\n=== GỬI THÔNG TIN PHỎNG VẤN ===");
+        ColorPrintUtil.printHeader("GỬI THÔNG TIN PHỎNG VẤN");
 
         int id = -1;
         boolean validId = false;
 
         while (!validId) {
-            System.out.print("Nhập ID đơn: ");
+            ColorPrintUtil.printPrompt("Nhập ID đơn: ");
             try {
                 id = Integer.parseInt(scanner.nextLine());
                 validId = true;
             } catch (NumberFormatException e) {
-                System.out.println("ID không hợp lệ! Vui lòng nhập số.");
+                ColorPrintUtil.printError("ID không hợp lệ! Vui lòng nhập số.");
             }
         }
 
         // Kiểm tra đơn tồn tại
         Map<String, Object> app = (Map<String, Object>) applicationService.viewApplicationDetail(id);
         if (app.isEmpty()) {
-            System.out.println("Không tìm thấy đơn ứng tuyển với ID: " + id);
+            ColorPrintUtil.printError("Không tìm thấy đơn ứng tuyển với ID: " + id);
             return;
         }
 
         // Kiểm tra trạng thái
         String progress = (String) app.get("progress");
         if ("interviewing".equals(progress) || "done".equals(progress)) {
-            System.out.println("Đơn đã ở trạng thái: " + progress + ", không thể gửi thông tin phỏng vấn!");
+            ColorPrintUtil.printWarning("Đơn đã ở trạng thái: " + progress + ", không thể gửi thông tin phỏng vấn!");
             return;
         }
 
@@ -265,11 +267,11 @@ public class MenuApplicationForm {
         boolean validLink = false;
 
         while(!validLink) {
-            System.out.print("Nhập link phỏng vấn: ");
+            ColorPrintUtil.printPrompt("Nhập link phỏng vấn: ");
             interviewLink = scanner.nextLine();
 
             if (interviewLink.trim().isEmpty()) {
-                System.out.println("Link phỏng vấn không được để trống! Vui lòng nhập lại.");
+                ColorPrintUtil.printError("Link phỏng vấn không được để trống! Vui lòng nhập lại.");
             } else {
                 validLink = true;
             }
@@ -279,7 +281,7 @@ public class MenuApplicationForm {
         boolean validTime = false;
 
         while (!validTime) {
-            System.out.println("Nhập thời gian phỏng vấn (định dạng dd/MM/yyyy HH:mm): ");
+            ColorPrintUtil.printPrompt("Nhập thời gian phỏng vấn (định dạng dd/MM/yyyy HH:mm): ");
             String dateTimeStr = scanner.nextLine();
 
             try {
@@ -288,67 +290,67 @@ public class MenuApplicationForm {
                 interviewTime = new Timestamp(parsedDate.getTime());
                 validTime = true;
             } catch (ParseException e) {
-                System.out.println("Định dạng thời gian không hợp lệ! Vui lòng nhập lại.");
+                ColorPrintUtil.printError("Định dạng thời gian không hợp lệ! Vui lòng nhập lại.");
             }
         }
 
         boolean success = applicationService.sendInterviewInfo(id, interviewLink, interviewTime);
 
         if (success) {
-            System.out.println("Đã gửi thông tin phỏng vấn thành công!");
+            ColorPrintUtil.printSuccess("Đã gửi thông tin phỏng vấn thành công!");
         } else {
-            System.out.println("Gửi thông tin phỏng vấn thất bại!");
+            ColorPrintUtil.printError("Gửi thông tin phỏng vấn thất bại!");
         }
     }
 
     private void updateInterviewResult() {
-        System.out.println("\n=== CẬP NHẬT KẾT QUẢ PHỎNG VẤN ===");
+        ColorPrintUtil.printHeader("CẬP NHẬT KẾT QUẢ PHỎNG VẤN");
 
         int id = -1;
         boolean validId = false;
 
         while (!validId) {
-            System.out.print("Nhập ID đơn: ");
+            ColorPrintUtil.printPrompt("Nhập ID đơn: ");
             try {
                 id = Integer.parseInt(scanner.nextLine());
                 validId = true;
             } catch (NumberFormatException e) {
-                System.out.println("ID không hợp lệ! Vui lòng nhập số.");
+                ColorPrintUtil.printError("ID không hợp lệ! Vui lòng nhập số.");
             }
         }
 
         // Kiểm tra đơn tồn tại
         Map<String, Object> app = (Map<String, Object>) applicationService.viewApplicationDetail(id);
         if (app.isEmpty()) {
-            System.out.println("Không tìm thấy đơn ứng tuyển với ID: " + id);
+            ColorPrintUtil.printError("Không tìm thấy đơn ứng tuyển với ID: " + id);
             return;
         }
 
         // Kiểm tra trạng thái
         String progress = (String) app.get("progress");
         if (!"interviewing".equals(progress)) {
-            System.out.println("Đơn chưa ở trạng thái phỏng vấn (interviewing). Trạng thái hiện tại: " + progress);
+            ColorPrintUtil.printWarning("Đơn chưa ở trạng thái phỏng vấn (interviewing). Trạng thái hiện tại: " + progress);
             return;
         }
 
-        System.out.println("Chọn kết quả phỏng vấn:");
-        System.out.println("1. Pass - Đậu");
-        System.out.println("2. Fail - Trượt");
+        ColorPrintUtil.printSubHeader("Chọn kết quả phỏng vấn");
+        System.out.println(PrintColor.GREEN + "1. Pass " + PrintColor.WHITE + "- Đậu" + PrintColor.RESET);
+        System.out.println(PrintColor.RED + "2. Fail " + PrintColor.WHITE + "- Trượt" + PrintColor.RESET);
 
         int resultChoice = -1;
         boolean validChoice = false;
 
         while (!validChoice) {
-            System.out.print("Lựa chọn của bạn (1-2): ");
+            ColorPrintUtil.printPrompt("Lựa chọn của bạn (1-2): ");
             try {
                 resultChoice = Integer.parseInt(scanner.nextLine());
                 if (resultChoice >= 1 && resultChoice <= 2) {
                     validChoice = true;
                 } else {
-                    System.out.println("Lựa chọn phải từ 1-2. Vui lòng nhập lại!");
+                    ColorPrintUtil.printError("Lựa chọn phải từ 1-2. Vui lòng nhập lại!");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Lựa chọn không hợp lệ! Vui lòng nhập số từ 1-2.");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ! Vui lòng nhập số từ 1-2.");
             }
         }
 
@@ -357,19 +359,19 @@ public class MenuApplicationForm {
             case 1: result = "Pass"; break;
             case 2: result = "Fail"; break;
             default:
-                System.out.println("Lựa chọn không hợp lệ!");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
                 return;
         }
 
-        System.out.print("Nhập ghi chú kết quả phỏng vấn: ");
+        ColorPrintUtil.printPrompt("Nhập ghi chú kết quả phỏng vấn: ");
         String note = scanner.nextLine();
 
         boolean success = applicationService.updateInterviewResult(id, result, note);
 
         if (success) {
-            System.out.println("Đã cập nhật kết quả phỏng vấn thành công!");
+            ColorPrintUtil.printSuccess("Đã cập nhật kết quả phỏng vấn thành công!");
         } else {
-            System.out.println("Cập nhật kết quả phỏng vấn thất bại!");
+            ColorPrintUtil.printError("Cập nhật kết quả phỏng vấn thất bại!");
         }
     }
 }

@@ -1,6 +1,7 @@
 package presentation.candidate;
 
 import business.service.candidate.CandidateAuthen;
+import config.ColorPrintUtil;
 import entity.Candidate;
 import java.util.Scanner;
 
@@ -22,27 +23,26 @@ public class MenuCandidate {
 
     public void showMainMenu() {
         if (!candidateAuthen.hasActiveSession()) {
-            System.out.println("Bạn chưa đăng nhập! Vui lòng đăng nhập trước.");
+            ColorPrintUtil.printError("Bạn chưa đăng nhập! Vui lòng đăng nhập trước.");
             return;
         }
 
         Candidate currentCandidate = candidateAuthen.getCurrentCandidate();
 
         while (true) {
-            System.out.println("\n========== MENU ỨNG VIÊN ===========");
-            System.out.println("Xin chào, " + currentCandidate.getName() + "!");
-            System.out.println("1. Quản lý Thông tin cá nhân");
-            System.out.println("2. Xem và nộp đơn ứng tuyển");
-            System.out.println("3. Xem đơn đã ứng tuyển");
-            System.out.println("4. Đăng xuất");
-            System.out.println("====================================");
-            System.out.print("Nhập lựa chọn: ");
+            ColorPrintUtil.printHeader("MENU ỨNG VIÊN");
+            ColorPrintUtil.printHighlight("Xin chào, " + currentCandidate.getName() + "!");
+            ColorPrintUtil.printInfo("1. Quản lý Thông tin cá nhân");
+            ColorPrintUtil.printInfo("2. Xem và nộp đơn ứng tuyển");
+            ColorPrintUtil.printInfo("3. Xem đơn đã ứng tuyển");
+            ColorPrintUtil.printInfo("4. Đăng xuất");
+            ColorPrintUtil.printPrompt("Nhập lựa chọn: ");
 
             int choice;
             try {
                 choice = Integer.parseInt(scanner.nextLine());
             } catch (NumberFormatException e) {
-                System.out.println("Lựa chọn không hợp lệ!");
+                ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
                 continue;
             }
 
@@ -63,7 +63,7 @@ public class MenuCandidate {
                     candidateAuthen.logoutCandidate();
                     return;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    ColorPrintUtil.printError("Lựa chọn không hợp lệ!");
             }
         }
     }

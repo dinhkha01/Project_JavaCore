@@ -132,12 +132,7 @@ public class ApplicationService {
         return sb.toString();
     }
 
-    /**
-     * Helper method to truncate strings that are too long
-     * @param str String to truncate
-     * @param maxLength Maximum allowed length
-     * @return Truncated string
-     */
+
     private String truncateString(String str, int maxLength) {
         if (str == null) {
             return "";

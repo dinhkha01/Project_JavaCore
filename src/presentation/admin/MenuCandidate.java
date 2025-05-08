@@ -1,6 +1,8 @@
 package presentation.admin;
 
 import business.service.admin.CandidateService;
+import config.ColorPrintUtil;
+import config.PrintColor;
 import entity.Candidate;
 
 import java.util.List;
@@ -12,16 +14,22 @@ public class MenuCandidate {
 
     public void showMenu() {
         while (true) {
-            System.out.println("\n=== QUẢN LÝ ỨNG VIÊN ===");
+            ColorPrintUtil.printHeader("QUẢN LÝ ỨNG VIÊN");
             System.out.println("1. Hiển thị danh sách ứng viên");
             System.out.println("2. Khóa/Mở khóa tài khoản");
             System.out.println("3. Reset mật khẩu ứng viên");
             System.out.println("4. Tìm kiếm theo tên");
             System.out.println("5. Lọc theo tiêu chí");
             System.out.println("6. Quay về menu chính");
-            System.out.print("Nhập lựa chọn: ");
+            ColorPrintUtil.printPrompt("Nhập lựa chọn: ");
 
-            int choice = Integer.parseInt(scanner.nextLine());
+            int choice;
+            try {
+                choice = Integer.parseInt(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                ColorPrintUtil.printError("Vui lòng nhập một số hợp lệ!");
+                continue;
+            }
 
             switch (choice) {
                 case 1:
@@ -42,7 +50,7 @@ public class MenuCandidate {
                 case 6:
                     return;
                 default:
-                    System.out.println("Lựa chọn không hợp lệ!");
+                    ColorPrintUtil.printWarning("Lựa chọn không hợp lệ!");
             }
         }
     }
@@ -50,35 +58,58 @@ public class MenuCandidate {
     private void viewCandidates() {
         List<Candidate> candidates = candidateService.getAllCandidates();
         if (candidates.isEmpty()) {
-            System.out.println("Không có ứng viên nào trong hệ thống.");
+            ColorPrintUtil.printWarning("Không có ứng viên nào trong hệ thống.");
             return;
         }
 
-        System.out.println("\n=== DANH SÁCH ỨNG VIÊN ===");
-        System.out.printf("%-5s %-25s %-25s %-15s %-10s %-10s %-10s\n",
-                "ID", "Tên", "Email", "SĐT", "KN (năm)", "Giới tính", "Trạng thái");
+        ColorPrintUtil.printHeader("DANH SÁCH ỨNG VIÊN");
+        ColorPrintUtil.printTableHeader(String.format("%-5s %-25s %-25s %-15s %-10s %-10s %-10s",
+                "ID", "Tên", "Email", "SĐT", "KN (năm)", "Giới tính", "Trạng thái"));
         System.out.println("-----------------------------------------------------------------------------------------");
 
         for (Candidate c : candidates) {
-            System.out.printf("%-5d %-25s %-25s %-15s %-10d %-10s %-10s\n",
+            System.out.printf("%-5d %-25s %-25s %-15s %-10d %-10s  ",
                     c.getId(), c.getName(), c.getEmail(), c.getPhone(),
-                    c.getExperience(), c.getGender(), c.getStatus());
+                    c.getExperience(), c.getGender());
+
+            // In trạng thái với màu khác nhau
+            if ("active".equals(c.getStatus())) {
+
+                System.out.printf(PrintColor.GREEN + "%-10s" + PrintColor.RESET + "\n", c.getStatus());
+            } else {
+
+                System.out.printf(PrintColor.RED + "%-10s" + PrintColor.RESET + "\n", c.getStatus());
+            }
         }
     }
 
     private void toggleLockAccount() {
-        System.out.print("Nhập ID ứng viên: ");
-        int id = Integer.parseInt(scanner.nextLine());
+        ColorPrintUtil.printHeader("KHÓA/MỞ KHÓA TÀI KHOẢN");
+        ColorPrintUtil.printPrompt("Nhập ID ứng viên: ");
 
-        Candidate candidate = candidateService.getCandidateById(id);
-        if (candidate == null) {
-            System.out.println("Không tìm thấy ứng viên với ID: " + id);
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            ColorPrintUtil.printError("ID không hợp lệ!");
             return;
         }
 
-        System.out.println("Ứng viên: " + candidate.getName());
-        System.out.println("Trạng thái hiện tại: " + candidate.getStatus());
-        System.out.print("Bạn có chắc muốn " +
+        Candidate candidate = candidateService.getCandidateById(id);
+        if (candidate == null) {
+            ColorPrintUtil.printError("Không tìm thấy ứng viên với ID: " + id);
+            return;
+        }
+
+        ColorPrintUtil.printInfo("Ứng viên: " + candidate.getName());
+        System.out.print("Trạng thái hiện tại: ");
+        if ("active".equals(candidate.getStatus())) {
+            System.out.println(PrintColor.GREEN + candidate.getStatus() + PrintColor.RESET);
+        } else {
+            System.out.println(PrintColor.RED + candidate.getStatus() + PrintColor.RESET);
+        }
+
+        ColorPrintUtil.printPrompt("Bạn có chắc muốn " +
                 (candidate.getStatus().equals("active") ? "khóa" : "mở khóa") +
                 " tài khoản này? (y/n): ");
 
@@ -86,121 +117,149 @@ public class MenuCandidate {
         if (confirm.equalsIgnoreCase("y")) {
             boolean result = candidateService.toggleCandidateStatus(id);
             if (result) {
-                System.out.println("Đã thay đổi trạng thái tài khoản thành công!");
+                ColorPrintUtil.printSuccess("Đã thay đổi trạng thái tài khoản thành công!");
             } else {
-                System.out.println("Không thể thay đổi trạng thái tài khoản!");
+                ColorPrintUtil.printError("Không thể thay đổi trạng thái tài khoản!");
             }
+        } else {
+            ColorPrintUtil.printInfo("Đã hủy thao tác.");
         }
     }
 
     private void resetPassword() {
-        System.out.print("Nhập ID ứng viên: ");
-        int id = Integer.parseInt(scanner.nextLine());
+        ColorPrintUtil.printHeader("RESET MẬT KHẨU");
+        ColorPrintUtil.printPrompt("Nhập ID ứng viên: ");
 
-        Candidate candidate = candidateService.getCandidateById(id);
-        if (candidate == null) {
-            System.out.println("Không tìm thấy ứng viên với ID: " + id);
+        int id;
+        try {
+            id = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            ColorPrintUtil.printError("ID không hợp lệ!");
             return;
         }
 
-        System.out.println("Ứng viên: " + candidate.getName());
-        System.out.print("Bạn có chắc muốn reset mật khẩu cho tài khoản này? (y/n): ");
+        Candidate candidate = candidateService.getCandidateById(id);
+        if (candidate == null) {
+            ColorPrintUtil.printError("Không tìm thấy ứng viên với ID: " + id);
+            return;
+        }
+
+        ColorPrintUtil.printInfo("Ứng viên: " + candidate.getName());
+        ColorPrintUtil.printPrompt("Bạn có chắc muốn reset mật khẩu cho tài khoản này? (y/n): ");
 
         String confirm = scanner.nextLine();
         if (confirm.equalsIgnoreCase("y")) {
             String newPassword = candidateService.resetCandidatePassword(id);
             if (newPassword != null) {
-                System.out.println("Đã reset mật khẩu thành công!");
-                System.out.println("Mật khẩu mới: " + newPassword);
+                ColorPrintUtil.printSuccess("Đã reset mật khẩu thành công!");
+                ColorPrintUtil.printHighlight("Mật khẩu mới: " + newPassword);
             } else {
-                System.out.println("Không thể reset mật khẩu!");
+                ColorPrintUtil.printError("Không thể reset mật khẩu!");
             }
+        } else {
+            ColorPrintUtil.printInfo("Đã hủy thao tác.");
         }
     }
 
     private void searchByName() {
-        System.out.print("Nhập tên cần tìm: ");
+        ColorPrintUtil.printHeader("TÌM KIẾM ỨNG VIÊN");
+        ColorPrintUtil.printPrompt("Nhập tên cần tìm: ");
         String name = scanner.nextLine();
 
         List<Candidate> candidates = candidateService.searchCandidatesByName(name);
 
         if (candidates.isEmpty()) {
-            System.out.println("Không tìm thấy ứng viên nào phù hợp với từ khóa: " + name);
+            ColorPrintUtil.printWarning("Không tìm thấy ứng viên nào phù hợp với từ khóa: " + name);
             return;
         }
 
-        System.out.println("\n=== KẾT QUẢ TÌM KIẾM CHO '" + name + "' ===");
-        System.out.printf("%-5s %-25s %-25s %-15s %-10s %-10s %-10s\n",
-                "ID", "Tên", "Email", "SĐT", "KN (năm)", "Giới tính", "Trạng thái");
+        ColorPrintUtil.printHeader("KẾT QUẢ TÌM KIẾM CHO '" + name + "'");
+        ColorPrintUtil.printTableHeader(String.format("%-5s %-25s %-25s %-15s %-10s %-10s %-10s",
+                "ID", "Tên", "Email", "SĐT", "KN (năm)", "Giới tính", "Trạng thái"));
         System.out.println("-----------------------------------------------------------------------------------------");
 
         for (Candidate c : candidates) {
-            System.out.printf("%-5d %-25s %-25s %-15s %-10d %-10s %-10s\n",
+            System.out.printf("%-5d %-25s %-25s %-15s %-10d %-10s ",
                     c.getId(), c.getName(), c.getEmail(), c.getPhone(),
-                    c.getExperience(), c.getGender(), c.getStatus());
+                    c.getExperience(), c.getGender());
+
+            if ("active".equals(c.getStatus())) {
+                System.out.printf(PrintColor.GREEN + "%-10s" + PrintColor.RESET + "\n", c.getStatus());
+            } else {
+                System.out.printf(PrintColor.RED + "%-10s" + PrintColor.RESET + "\n", c.getStatus());
+            }
         }
     }
 
     private void filterCandidates() {
-        System.out.println("Lọc theo:");
+        ColorPrintUtil.printHeader("LỌC ỨNG VIÊN");
+        ColorPrintUtil.printSubHeader("Lọc theo:");
         System.out.println("1. Kinh nghiệm");
         System.out.println("2. Tuổi");
         System.out.println("3. Giới tính");
         System.out.println("4. Công nghệ");
-        System.out.print("Chọn tiêu chí: ");
-        int criteria = Integer.parseInt(scanner.nextLine());
+        ColorPrintUtil.printPrompt("Chọn tiêu chí: ");
+
+        int criteria;
+        try {
+            criteria = Integer.parseInt(scanner.nextLine());
+        } catch (NumberFormatException e) {
+            ColorPrintUtil.printError("Tiêu chí không hợp lệ!");
+            return;
+        }
 
         List<Candidate> candidates = null;
 
         switch (criteria) {
             case 1:
-                System.out.print("Nhập kinh nghiệm tối thiểu (năm): ");
+                ColorPrintUtil.printPrompt("Nhập kinh nghiệm tối thiểu (năm): ");
                 int minExp = Integer.parseInt(scanner.nextLine());
-                System.out.print("Nhập kinh nghiệm tối đa (năm): ");
+                ColorPrintUtil.printPrompt("Nhập kinh nghiệm tối đa (năm): ");
                 int maxExp = Integer.parseInt(scanner.nextLine());
                 candidates = candidateService.filterCandidatesByExperience(minExp, maxExp);
                 break;
             case 2:
-                System.out.print("Nhập tuổi tối thiểu: ");
+                ColorPrintUtil.printPrompt("Nhập tuổi tối thiểu: ");
                 int minAge = Integer.parseInt(scanner.nextLine());
-                System.out.print("Nhập tuổi tối đa: ");
+                ColorPrintUtil.printPrompt("Nhập tuổi tối đa: ");
                 int maxAge = Integer.parseInt(scanner.nextLine());
                 candidates = candidateService.filterCandidatesByAge(minAge, maxAge);
                 break;
             case 3:
-                System.out.print("Nhập giới tính (Nam/Nữ): ");
+                ColorPrintUtil.printPrompt("Nhập giới tính (Nam/Nữ): ");
                 String gender = scanner.nextLine();
                 candidates = candidateService.filterCandidatesByGender(gender);
                 break;
             case 4:
-                System.out.print("Nhập ID công nghệ: ");
+                ColorPrintUtil.printPrompt("Nhập ID công nghệ: ");
                 int techId = Integer.parseInt(scanner.nextLine());
                 candidates = candidateService.filterCandidatesByTechnology(techId);
                 break;
             default:
-                System.out.println("Tiêu chí không hợp lệ!");
+                ColorPrintUtil.printError("Tiêu chí không hợp lệ!");
                 return;
         }
 
         if (candidates == null || candidates.isEmpty()) {
-            System.out.println("Không tìm thấy ứng viên nào phù hợp với tiêu chí đã chọn.");
+            ColorPrintUtil.printWarning("Không tìm thấy ứng viên nào phù hợp với tiêu chí đã chọn.");
             return;
         }
 
-        System.out.println("\n=== KẾT QUẢ LỌC ===");
-        System.out.printf("%-5s %-25s %-25s %-15s %-10s %-10s %-10s\n",
-                "ID", "Tên", "Email", "SĐT", "KN (năm)", "Giới tính", "Trạng thái");
+        ColorPrintUtil.printHeader("KẾT QUẢ LỌC");
+        ColorPrintUtil.printTableHeader(String.format("%-5s %-25s %-25s %-15s %-10s %-10s %-10s",
+                "ID", "Tên", "Email", "SĐT", "KN (năm)", "Giới tính", "Trạng thái"));
         System.out.println("-----------------------------------------------------------------------------------------");
 
         for (Candidate c : candidates) {
-            System.out.printf("%-5d %-25s %-25s %-15s %-10d %-10s %-10s\n",
+            System.out.printf("%-5d %-25s %-25s %-15s %-10d %-10s ",
                     c.getId(), c.getName(), c.getEmail(), c.getPhone(),
-                    c.getExperience(), c.getGender(), c.getStatus());
-        }
-    }
+                    c.getExperience(), c.getGender());
 
-    private String generateRandomPassword() {
-        // Tạo mật khẩu ngẫu nhiên
-        return "Temp@" + (int)(Math.random() * 10000);
+            if ("active".equals(c.getStatus())) {
+                System.out.printf(PrintColor.GREEN + "%-10s" + PrintColor.RESET + "\n", c.getStatus());
+            } else {
+                System.out.printf(PrintColor.RED + "%-10s" + PrintColor.RESET + "\n", c.getStatus());
+            }
+        }
     }
 }

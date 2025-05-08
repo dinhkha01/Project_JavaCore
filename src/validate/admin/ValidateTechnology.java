@@ -29,7 +29,7 @@ public class ValidateTechnology {
         List<Technology> technologies = technologyDao.findAll();
 
         for (Technology tech : technologies) {
-            System.out.println("So sánh với: " + tech.getName());
+
             // Bỏ qua các công nghệ đã bị xóa mềm
             if (tech.getName().endsWith("_deleted")) {
                 continue;

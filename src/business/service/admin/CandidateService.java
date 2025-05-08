@@ -37,7 +37,7 @@ public class CandidateService {
     }
 
     private String generateRandomPassword() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+        String chars = "";
         StringBuilder sb = new StringBuilder();
         Random random = new Random();
 

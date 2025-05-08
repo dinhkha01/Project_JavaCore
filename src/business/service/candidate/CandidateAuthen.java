@@ -2,6 +2,7 @@ package business.service.candidate;
 
 import business.DAO.candidate.CandidateAuthenDaoImpl;
 import business.DAO.candidate.ICandidateAuthen;
+import config.ColorPrintUtil;
 import entity.Candidate;
 
 import java.io.*;
@@ -49,17 +50,17 @@ public class CandidateAuthen {
     public boolean registerCandidate(Candidate candidate) {
         // Kiểm tra xem email đã tồn tại chưa
         if (candidateDao.findByEmail(candidate.getEmail()) != null) {
-            System.out.println("Email đã được sử dụng. Vui lòng sử dụng email khác!");
+            ColorPrintUtil.printError("Email đã được sử dụng. Vui lòng sử dụng email khác!");
             return false;
         }
 
         try {
             // Thêm candidate mới vào database
             candidateDao.save(candidate);
-            System.out.println("Đăng ký thành công! Vui lòng đăng nhập.");
+            ColorPrintUtil.printSuccess("Đăng ký thành công! Vui lòng đăng nhập.");
             return true;
         } catch (Exception e) {
-            System.err.println("Lỗi khi đăng ký: " + e.getMessage());
+            ColorPrintUtil.printError("Lỗi khi đăng ký: " + e.getMessage());
             return false;
         }
     }
@@ -67,7 +68,7 @@ public class CandidateAuthen {
     // Đăng nhập candidate
     public boolean loginCandidate(String email, String password) {
         if (hasActiveSession()) {
-            System.out.println("Bạn đã đăng nhập với tài khoản: " + currentCandidate.getEmail());
+            ColorPrintUtil.printWarning("Bạn đã đăng nhập với tài khoản: " + currentCandidate.getEmail());
             return true;
         }
 
@@ -76,18 +77,19 @@ public class CandidateAuthen {
             if (candidate != null) {
                 // Kiểm tra trạng thái tài khoản
                 if ("inactive".equalsIgnoreCase(candidate.getStatus())) {
-                    System.out.println("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.");
+                    ColorPrintUtil.printError("Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên để được hỗ trợ.");
                     return false;
                 }
 
                 currentCandidate = candidate;
                 saveSession(); // Lưu phiên đăng nhập
+                ColorPrintUtil.printSuccess("Đăng nhập thành công!");
                 return true;
             } else {
                 return false;
             }
         } catch (Exception e) {
-            System.err.println("Lỗi khi đăng nhập: " + e.getMessage());
+            ColorPrintUtil.printError("Lỗi khi đăng nhập: " + e.getMessage());
             return false;
         }
     }
@@ -95,8 +97,8 @@ public class CandidateAuthen {
     // Đăng xuất candidate
     public void logoutCandidate() {
         currentCandidate = null;
-        clearSession(); // Xóa phiên đăng nhập
-        System.out.println("Đăng xuất thành công!");
+        clearSession();
+        ColorPrintUtil.printLogout("Đăng xuất thành công!");
     }
 
     // Lưu phiên đăng nhập vào file
@@ -109,7 +111,7 @@ public class CandidateAuthen {
             bw.newLine();
             bw.write(currentCandidate.getPassword());
         } catch (IOException e) {
-            System.err.println("Lỗi khi lưu phiên đăng nhập: " + e.getMessage());
+            ColorPrintUtil.printError("Lỗi khi lưu phiên đăng nhập: " + e.getMessage());
         }
     }
 
@@ -133,18 +135,18 @@ public class CandidateAuthen {
                 Candidate candidate = candidateDao.findByEmailAndPassword(email, password);
                 if (candidate != null && candidate.getId() == id) {
                     // Kiểm tra trạng thái tài khoản khi tải phiên đăng nhập
-                    if ("locked".equalsIgnoreCase(candidate.getStatus())) {
-                        System.out.println("Tài khoản của bạn đã bị khóa. Phiên đăng nhập trước đó không hợp lệ.");
+                    if ("inactive".equalsIgnoreCase(candidate.getStatus())) {
+                        ColorPrintUtil.printWarning("Tài khoản của bạn đã bị khóa. Phiên đăng nhập trước đó không hợp lệ.");
                         clearSession();
                         return;
                     }
 
                     currentCandidate = candidate;
-                    System.out.println("Đã tải phiên đăng nhập của ứng viên: " + email);
+                    ColorPrintUtil.printInfo("Đã tải phiên đăng nhập của ứng viên: " + email);
                 }
             }
         } catch (IOException | NumberFormatException e) {
-            System.err.println("Lỗi khi đọc phiên đăng nhập: " + e.getMessage());
+            ColorPrintUtil.printError("Lỗi khi đọc phiên đăng nhập: " + e.getMessage());
             clearSession();
         }
     }
@@ -154,9 +156,9 @@ public class CandidateAuthen {
         File sessionFile = new File(SESSION_FILE);
         if (sessionFile.exists()) {
             if (sessionFile.delete()) {
-                System.out.println("Đã xóa phiên đăng nhập.");
+                ColorPrintUtil.printError("Đã xóa phiên đăng nhập.");
             } else {
-                System.err.println("Không thể xóa file phiên đăng nhập.");
+                ColorPrintUtil.printError("Không thể xóa file phiên đăng nhập.");
             }
         }
     }
@@ -170,10 +172,10 @@ public class CandidateAuthen {
                 currentCandidate = candidate;
                 saveSession(); // Cập nhật phiên đăng nhập
             }
-            System.out.println("Cập nhật thông tin thành công!");
+            ColorPrintUtil.printSuccess("Cập nhật thông tin thành công!");
             return true;
         } catch (Exception e) {
-            System.err.println("Lỗi khi cập nhật thông tin: " + e.getMessage());
+            ColorPrintUtil.printError("Lỗi khi cập nhật thông tin: " + e.getMessage());
             return false;
         }
     }
