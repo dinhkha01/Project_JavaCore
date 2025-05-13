@@ -64,7 +64,7 @@ public class MenuSystem {
         }
     }
 
-    private static void loginCandidate(CandidateAuthen candidateAuthen) {
+    private static void loginCandidate(   CandidateAuthen candidateAuthen) {
         Scanner scanner = new Scanner(System.in);
         ColorPrintUtil.printSubHeader("ĐĂNG NHẬP ỨNG VIÊN");
 
